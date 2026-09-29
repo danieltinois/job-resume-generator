@@ -5,7 +5,7 @@ import yaml
 from pydantic import ValidationError
 
 from resume_tailor.models import Profile
-from resume_tailor.profile import load_profile
+from resume_tailor.profile import EXAMPLE_PATH, load_profile
 
 MINIMAL = {
     "personal": {"name": "Alex", "title": "Backend Engineer"},
@@ -38,16 +38,19 @@ def test_loads_minimal_profile(tmp_path):
     assert profile.projects == []  # optional sections default to empty
 
 
-def test_shipped_profile_is_valid():
-    """The example profile must always work end to end."""
-    profile = load_profile()
+def test_shipped_example_profile_is_valid():
+    """profile.example.yaml must always work, including on a fresh clone where
+    the untracked profile.yaml does not exist."""
+    profile = load_profile(EXAMPLE_PATH)
     assert profile.personal.name == "Alex Fictitious"
     assert profile.experiences
+    assert profile.skill_categories
 
 
-def test_missing_file_exits_cleanly(tmp_path):
-    with pytest.raises(SystemExit):
+def test_missing_profile_points_at_the_example(tmp_path):
+    with pytest.raises(SystemExit) as error:
         load_profile(tmp_path / "nope.yaml")
+    assert "profile.example.yaml" in str(error.value)
 
 
 def test_duplicate_achievement_id_is_rejected(tmp_path):

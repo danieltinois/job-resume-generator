@@ -9,6 +9,7 @@ from .models import Profile
 
 ROOT = Path(__file__).resolve().parent.parent
 PROFILE_PATH = ROOT / "profile" / "profile.yaml"
+EXAMPLE_PATH = ROOT / "profile" / "profile.example.yaml"
 
 
 def load_profile(path: Path = PROFILE_PATH) -> Profile:
@@ -17,7 +18,11 @@ def load_profile(path: Path = PROFILE_PATH) -> Profile:
     try:
         raw = yaml.safe_load(path.read_text(encoding="utf-8"))
     except FileNotFoundError:
-        raise SystemExit(f"Profile not found: {path}")
+        raise SystemExit(
+            f"Profile not found: {path}\n"
+            f"To get started, copy the fictional example into place:\n"
+            f"  profile/profile.example.yaml  ->  profile/profile.yaml"
+        )
     except yaml.YAMLError as error:
         raise SystemExit(f"Invalid YAML in {path}:\n{error}")
 

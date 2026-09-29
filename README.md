@@ -17,6 +17,15 @@ profile.yaml + job.md -> python -> resume.json -> typst -> resume.pdf
 pip install -e ".[dev]"
 ```
 
+## First run
+
+Your real career data is **never committed**: `profile/profile.yaml` is in
+`.gitignore`. The repo ships a fictional one.
+
+```bash
+copy profile/profile.example.yaml profile/profile.yaml   # then edit it
+```
+
 ## Use
 
 ```bash
@@ -31,7 +40,7 @@ renders) and `resume.pdf` next to it.
 
 | File | Role |
 |---|---|
-| `profile/profile.yaml` | Your career. The only source of truth. |
+| `profile/profile.example.yaml` | Fictional example. Copy it to `profile/profile.yaml`, which stays untracked. |
 | `jobs/*.md` | A job description. Plain Markdown. |
 | `resume_tailor/models.py` | Pydantic schema; rejects duplicate achievement ids. |
 | `resume_tailor/profile.py` | Load + validate the profile. |
