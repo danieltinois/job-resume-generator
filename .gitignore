@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
+# Generated per job. Kept out of the repo on purpose: once profile.yaml holds
+# your real data, these files carry your name, email and phone number.
+output/
