@@ -1,6 +1,7 @@
 package io.github.danieltinois.resumetailor.auth;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,13 @@ public class AuthService {
 
     static final Duration VERIFICATION_TTL = Duration.ofHours(24);
     static final Duration RESET_TTL = Duration.ofHours(1);
+
+    /**
+     * A refresh token reused this soon after its rotation is a race between
+     * tabs sharing one cookie, not a theft: the other request already set the
+     * new cookie, so this one fails quietly instead of revoking the family.
+     */
+    static final Duration CONCURRENT_REFRESH_GRACE = Duration.ofSeconds(10);
 
     /** Tokens issued by a successful sign-in. */
     public record Session(String accessToken, String refreshToken) {
@@ -130,12 +138,16 @@ public class AuthService {
         }
         TokenStore.StoredToken stored = tokens.find(raw, TokenType.REFRESH).orElseThrow(AuthService::sessionExpired);
         if (stored.usedAt() != null) {
+            if (usedJustNow(stored)) {
+                throw concurrentRefresh();
+            }
             tokens.revokeFamily(stored.family());
             throw sessionExpired();
         }
         if (tokens.consume(raw, TokenType.REFRESH).isEmpty()) {
-            // Expired, or used by a concurrent request a moment ago.
-            throw sessionExpired();
+            // Expired, or consumed by a concurrent request between find and consume.
+            boolean raced = tokens.find(raw, TokenType.REFRESH).filter(AuthService::usedJustNow).isPresent();
+            throw raced ? concurrentRefresh() : sessionExpired();
         }
         String next = tokens.issue(stored.userId(), TokenType.REFRESH, RefreshCookies.TTL, stored.family());
         return new Session(jwt.issue(stored.userId()), next);
@@ -146,6 +158,14 @@ public class AuthService {
         if (raw != null && !raw.isBlank()) {
             tokens.find(raw, TokenType.REFRESH).ifPresent(stored -> tokens.revokeFamily(stored.family()));
         }
+    }
+
+    private static boolean usedJustNow(TokenStore.StoredToken token) {
+        return token.usedAt() != null && token.usedAt().isAfter(Instant.now().minus(CONCURRENT_REFRESH_GRACE));
+    }
+
+    private static AuthException concurrentRefresh() {
+        return new AuthException(HttpStatus.UNAUTHORIZED, "Session refreshed by another tab, retry", true);
     }
 
     private static AuthException sessionExpired() {

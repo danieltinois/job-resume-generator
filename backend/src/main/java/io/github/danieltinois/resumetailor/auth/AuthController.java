@@ -100,10 +100,13 @@ public class AuthController {
         try {
             return withSession(auth.refresh(token));
         } catch (AuthException e) {
-            // A dead refresh cookie is cleared, so the browser stops sending it.
-            return ResponseEntity.status(e.status())
-                    .header(HttpHeaders.SET_COOKIE, cookies.clear().toString())
-                    .body(ProblemDetail.forStatusAndDetail(e.status(), e.getMessage()));
+            // A dead refresh cookie is cleared, so the browser stops sending it. After a race between
+            // tabs it is left alone: the winning request has just set its replacement.
+            var response = ResponseEntity.status(e.status());
+            if (!e.keepsRefreshCookie()) {
+                response.header(HttpHeaders.SET_COOKIE, cookies.clear().toString());
+            }
+            return response.body(ProblemDetail.forStatusAndDetail(e.status(), e.getMessage()));
         }
     }
 

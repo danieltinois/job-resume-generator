@@ -148,7 +148,9 @@ Rules:
   `Authorization: Bearer`.
 - **Refresh token**: opaque random value in an `HttpOnly; Secure;
   SameSite=Strict` cookie, 30 days, **rotated** on every use (old one marked
-  used; reuse of a used token revokes the whole family for that user).
+  used; reuse of a used token revokes the whole family for that user). A
+  reuse within 10 seconds of the rotation is treated as tabs refreshing
+  concurrently: it gets 401 without revoking anything or clearing the cookie.
 - **Passwords**: BCrypt. Login is rate-limited per IP + email (Bucket4j, in
   memory, 5 attempts/minute).
 - **Email verification** is required before the first password login. Password

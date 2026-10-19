@@ -64,9 +64,25 @@ class RefreshTest extends IntegrationTest {
         refresh(rotated).andExpect(status().isOk());
     }
 
+    /** Makes every used token look used a minute ago: past the concurrency grace, so reuse is a replay. */
+    private void ageUsedTokens() {
+        jdbc.sql("UPDATE auth_tokens SET used_at = now() - interval '1 minute' WHERE used_at IS NOT NULL").update();
+    }
+
+    @Test
+    void concurrentRefreshKeepsTheSession() throws Exception {
+        // Two tabs refresh with the same cookie at once: the loser must not sign the user out.
+        String rotated = cookieOf(refresh(loginCookie));
+
+        refresh(loginCookie).andExpect(status().isUnauthorized())
+                .andExpect(header().doesNotExist("Set-Cookie"));
+        refresh(rotated).andExpect(status().isOk());
+    }
+
     @Test
     void replayedTokenRevokesFamily() throws Exception {
         String rotated = cookieOf(refresh(loginCookie));
+        ageUsedTokens();
 
         refresh(loginCookie).andExpect(status().isUnauthorized())
                 .andExpect(header().string("Set-Cookie", containsString("Max-Age=0")));
@@ -77,6 +93,7 @@ class RefreshTest extends IntegrationTest {
     void otherSessionsSurviveAReplay() throws Exception {
         String otherDevice = cookieOf(signIn());
         refresh(loginCookie);
+        ageUsedTokens();
         refresh(loginCookie);
 
         refresh(otherDevice).andExpect(status().isOk());
