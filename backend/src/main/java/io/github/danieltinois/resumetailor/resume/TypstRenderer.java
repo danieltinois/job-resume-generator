@@ -12,6 +12,8 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import tools.jackson.databind.json.JsonMapper;
@@ -22,8 +24,9 @@ import tools.jackson.databind.json.JsonMapper;
  * Typst source, so user text cannot become markup.
  */
 @Component
-public class TypstRenderer {
+public class TypstRenderer implements AutoCloseable {
 
+    private static final Logger LOG = LoggerFactory.getLogger(TypstRenderer.class);
     private static final String TEMPLATE = "resume.typ";
     private static final List<String> FONTS = List.of(
             "Carlito-Regular.ttf", "Carlito-Bold.ttf", "Carlito-Italic.ttf", "Carlito-BoldItalic.ttf");
@@ -31,6 +34,7 @@ public class TypstRenderer {
     private final TypstProperties properties;
     private final Semaphore slots;
     private final JsonMapper json = JsonMapper.builder().build();
+    private final Path assets;
     private final Path template;
     private final Path fonts;
 
@@ -41,7 +45,7 @@ public class TypstRenderer {
                 : Runtime.getRuntime().availableProcessors();
         this.slots = new Semaphore(limit, true);
         try {
-            Path assets = Files.createTempDirectory("resume-typst-");
+            this.assets = Files.createTempDirectory("resume-typst-");
             this.template = extract("typst/" + TEMPLATE, assets.resolve(TEMPLATE));
             this.fonts = Files.createDirectory(assets.resolve("fonts"));
             for (String font : FONTS) {
@@ -71,6 +75,12 @@ public class TypstRenderer {
         }
     }
 
+    /** Deletes the unpacked template and fonts. Spring calls it when the context closes. */
+    @Override
+    public void close() {
+        deleteQuietly(assets);
+    }
+
     private byte[] compile(Path dir, ResumeDocument document) throws IOException {
         // --root covers the render dir only, so the template is copied next to its data.
         Files.copy(template, dir.resolve(TEMPLATE));
@@ -98,7 +108,9 @@ public class TypstRenderer {
             throw new RenderException("Interrupted while rendering", e);
         }
         if (process.exitValue() != 0) {
-            throw new RenderException("typst failed: " + Files.readString(stderr).strip());
+            // stderr names template paths and Typst internals: it goes to the log, not to callers.
+            LOG.warn("typst failed with exit code {}: {}", process.exitValue(), Files.readString(stderr).strip());
+            throw new RenderException("typst failed with exit code " + process.exitValue());
         }
         return Files.readAllBytes(dir.resolve("out.pdf"));
     }

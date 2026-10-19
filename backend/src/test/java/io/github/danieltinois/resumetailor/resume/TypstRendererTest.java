@@ -18,8 +18,12 @@ import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 
+@ExtendWith(OutputCaptureExtension.class)
 class TypstRendererTest {
 
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
@@ -43,9 +47,38 @@ class TypstRendererTest {
     }
 
     private static long renderDirs() throws IOException {
+        return tempDirs("resume-render-");
+    }
+
+    private static long tempDirs(String prefix) throws IOException {
         try (Stream<Path> entries = Files.list(Path.of(System.getProperty("java.io.tmpdir")))) {
-            return entries.filter(p -> p.getFileName().toString().startsWith("resume-render-")).count();
+            return entries.filter(p -> p.getFileName().toString().startsWith(prefix)).count();
         }
+    }
+
+    @Test
+    void closeDeletesUnpackedTemplate() throws IOException {
+        long before = tempDirs("resume-typst-");
+        TypstRenderer renderer = new TypstRenderer(new TypstProperties("typst", TIMEOUT, 0));
+        assertThat(tempDirs("resume-typst-")).isEqualTo(before + 1);
+
+        renderer.close();
+
+        assertThat(tempDirs("resume-typst-")).isEqualTo(before);
+    }
+
+    @Test
+    void compileErrorIsLoggedButNotExposed(@TempDir Path scripts, CapturedOutput output) throws IOException {
+        Path failing = scripts.resolve("failing-typst.sh");
+        Files.writeString(failing, "#!/bin/sh\necho 'error: internal detail /srv/secret' >&2\nexit 1\n");
+        failing.toFile().setExecutable(true);
+        try (TypstRenderer renderer = new TypstRenderer(new TypstProperties(failing.toString(), TIMEOUT, 0))) {
+            assertThatThrownBy(() -> renderer.render(document("en", "x")))
+                    .isInstanceOf(RenderException.class)
+                    .hasMessageNotContaining("/srv/secret");
+        }
+
+        assertThat(output).contains("error: internal detail /srv/secret");
     }
 
     @Test
