@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { watchCsp } from './csp';
 import { latestLink } from './mailpit';
 
 const fixture = (path: string) => join(__dirname, '..', '..', path);
@@ -8,6 +9,7 @@ const fixture = (path: string) => join(__dirname, '..', '..', path);
 test('registers, imports a profile, tailors a resume and downloads the PDF', async ({ page }) => {
   const email = `e2e-${Date.now()}-${Math.floor(Math.random() * 1e6)}@example.com`;
   const password = 'correct horse battery staple';
+  const violations = watchCsp(page);
 
   await test.step('register and confirm the email', async () => {
     await page.goto('/register');
@@ -54,6 +56,7 @@ test('registers, imports a profile, tailors a resume and downloads the PDF', asy
     await expect(page.locator('[data-test=matched]')).toContainText('Kafka');
     await expect(page.locator('[data-test=missing]')).toContainText('CI/CD');
     await expect(page.locator('iframe[title="Resume preview"]')).toHaveAttribute('src', /^blob:/);
+    await expect(page.frameLocator('iframe[title="Resume preview"]').locator('embed[type="application/pdf"]')).toHaveCount(1);
   });
 
   await test.step('save the resume and download the PDF', async () => {
@@ -74,4 +77,6 @@ test('registers, imports a profile, tailors a resume and downloads the PDF', asy
     await page.goto('/profile');
     await expect(page).toHaveURL(/\/login/);
   });
+
+  expect(violations).toEqual([]);
 });

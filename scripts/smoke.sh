@@ -51,7 +51,8 @@ check "API docs know the public URL" "$BASE_URL/v3/api-docs" 200 "\"url\":\"$BAS
 for page in / /profile; do
   headers=$(curl -s -o /dev/null -D - "$BASE_URL$page")
   if printf '%s' "$headers" | grep -qi '^x-frame-options: SAMEORIGIN' \
-    && printf '%s' "$headers" | grep -qi '^x-content-type-options: nosniff'; then
+    && printf '%s' "$headers" | grep -qi '^x-content-type-options: nosniff' \
+    && printf '%s' "$headers" | grep -qi "^content-security-policy: .*script-src 'self'"; then
     echo "ok   security headers on $page"
   else
     echo "FAIL security headers on $page" >&2
