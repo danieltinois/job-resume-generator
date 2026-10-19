@@ -9,6 +9,7 @@
         <h1>{{ i18n.t('profile.title') }}</h1>
         <span class="status" data-test="save-status" role="status" [class.problem]="status() === 'invalid' || status() === 'error' || status() === 'conflict'">
           @switch (status()) {
+            @case ('unsaved') { {{ i18n.t('profile.status.unsaved') }} }
             @case ('saving') { {{ i18n.t('profile.status.saving') }} }
             @case ('saved') { {{ i18n.t('profile.status.saved') }} }
             @case ('invalid') { {{ i18n.t('profile.status.invalid') }} }

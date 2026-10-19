@@ -9,6 +9,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { catchError, firstValueFrom, of } from 'rxjs';
 import type { Profile, StoredProfile, TechTerm } from '../core/api/types';
+import { AuthStore } from '../core/auth/auth-store';
 import { downloadBlob } from '../core/download';
 import { fieldError } from '../core/forms/field-error';
 import { I18n } from '../core/i18n/i18n';
@@ -58,12 +59,13 @@ const SECTIONS: ProfileSection[] = [
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './profile-editor.html',
   styleUrl: './profile-editor.scss',
-  host: { '(document:keydown)': 'onKeydown($event)' },
+  host: { '(document:keydown)': 'onKeydown($event)', '(window:beforeunload)': 'onBeforeUnload($event)' },
 })
 export class ProfileEditor {
   protected readonly i18n = inject(I18n);
   protected readonly fieldError = fieldError;
   private readonly http = inject(HttpClient);
+  private readonly auth = inject(AuthStore);
   private readonly destroyRef = inject(DestroyRef);
   private readonly dialog = inject(MatDialog);
   private readonly current = signal<Autosave | null>(null);
@@ -126,6 +128,28 @@ export class ProfileEditor {
     });
     autosave.start();
     this.current.set(autosave);
+  }
+
+  /**
+   * Called by the route guard before leaving: saves what is pending and asks
+   * before abandoning edits that could not be saved (invalid, or no session).
+   */
+  async canLeave(): Promise<boolean> {
+    const autosave = this.current();
+    if (!autosave) {
+      return true;
+    }
+    if (this.auth.isSignedIn()) {
+      await autosave.flush();
+    }
+    return !autosave.hasUnsavedChanges() || window.confirm(this.i18n.t('profile.leave.confirm'));
+  }
+
+  /** Closing or reloading the tab cannot wait for a save: the browser asks instead. */
+  protected onBeforeUnload(event: BeforeUnloadEvent): void {
+    if (this.current()?.hasUnsavedChanges()) {
+      event.preventDefault();
+    }
   }
 
   protected onKeydown(event: KeyboardEvent): void {

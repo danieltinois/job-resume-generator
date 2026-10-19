@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import type { Me } from '../api/types';
@@ -36,21 +36,32 @@ export class AuthStore {
 
   /** Restores a session from the refresh cookie, e.g. on page load or after Google sign-in. */
   async restore(): Promise<void> {
-    if (await this.refresh()) {
-      await this.loadUser();
+    try {
+      if (await this.refresh()) {
+        await this.loadUser();
+      }
+    } catch {
+      // Server unreachable: start signed out; the next sign-in or reload tries again.
     }
   }
 
-  /** A new access token, or null when the session is over. One refresh at a time, across tabs. */
+  /**
+   * A new access token, or null when the session is over. One refresh at a
+   * time, across tabs. A network or server failure rejects instead: the
+   * session may still be valid, so it is kept.
+   */
   refresh(): Promise<string | null> {
     return this.coordinator.run(async () => {
       try {
         const response = await firstValueFrom(this.http.post<AccessToken>('/api/auth/refresh', null));
         this.acceptToken(response.accessToken);
         return response.accessToken;
-      } catch {
-        this.clear();
-        return null;
+      } catch (error) {
+        if (error instanceof HttpErrorResponse && error.status >= 400 && error.status < 500) {
+          this.clear();
+          return null;
+        }
+        throw error;
       }
     });
   }

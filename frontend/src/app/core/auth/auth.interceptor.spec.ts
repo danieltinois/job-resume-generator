@@ -93,4 +93,30 @@ describe('authInterceptor', () => {
 
     expect(backend.expectOne('/assets/x.json').request.headers.has('Authorization')).toBe(false);
   });
+  it('signs out when the retried request is rejected again', async () => {
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const result = firstValueFrom(http.get('/api/profile'));
+    backend.expectOne('/api/profile').flush(null, { status: 401, statusText: 'Unauthorized' });
+    await vi.waitFor(() => backend.expectOne('/api/auth/refresh').flush({ accessToken: 'new-token' }));
+
+    await vi.waitFor(() =>
+      backend.expectOne('/api/profile').flush(null, { status: 401, statusText: 'Unauthorized' }),
+    );
+
+    await expect(result).rejects.toBeTruthy();
+    expect(store.isSignedIn()).toBe(false);
+    expect(navigate).toHaveBeenCalledWith(['/login'], { queryParams: { expired: 1 } });
+  });
+
+  it('keeps the session when the refresh cannot reach the server', async () => {
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const result = firstValueFrom(http.get('/api/profile'));
+    backend.expectOne('/api/profile').flush(null, { status: 401, statusText: 'Unauthorized' });
+
+    await vi.waitFor(() => backend.expectOne('/api/auth/refresh').error(new ProgressEvent('error')));
+
+    await expect(result).rejects.toBeTruthy();
+    expect(store.isSignedIn()).toBe(true);
+    expect(navigate).not.toHaveBeenCalled();
+  });
 });

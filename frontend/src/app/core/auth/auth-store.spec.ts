@@ -69,4 +69,22 @@ describe('AuthStore', () => {
 
     expect(store.isSignedIn()).toBe(false);
   });
+  it('keeps the session when the refresh cannot reach the server', async () => {
+    store.acceptToken('token');
+
+    const refreshed = store.refresh();
+    backend.expectOne('/api/auth/refresh').error(new ProgressEvent('error'));
+
+    await expect(refreshed).rejects.toBeTruthy();
+    expect(store.isSignedIn()).toBe(true);
+  });
+
+  it('starts signed out, without failing, when the server cannot be reached', async () => {
+    const restored = store.restore();
+
+    backend.expectOne('/api/auth/refresh').error(new ProgressEvent('error'));
+
+    await expect(restored).resolves.toBeUndefined();
+    expect(store.isSignedIn()).toBe(false);
+  });
 });

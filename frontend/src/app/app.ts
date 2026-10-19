@@ -19,7 +19,9 @@ export class App {
   private readonly router = inject(Router);
 
   protected async logout(): Promise<void> {
-    await this.auth.logout();
-    await this.router.navigateByUrl('/login');
+    // Leave the page first, so the profile editor can save pending edits while the session still holds.
+    if (await this.router.navigateByUrl('/login')) {
+      await this.auth.logout();
+    }
   }
 }

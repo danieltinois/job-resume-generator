@@ -67,4 +67,50 @@ describe('ProfileEditor', () => {
     backend.expectOne('/api/profile/export').flush(new Blob(['{}']));
     await vi.waitFor(() => expect(URL.createObjectURL).toHaveBeenCalled());
   });
+  it('saves pending edits before leaving the page', async () => {
+    const fixture = await render();
+    fixture.componentInstance.form()!.controls.personal.controls.name.setValue('Leaving');
+
+    const leaving = fixture.componentInstance.canLeave();
+
+    const save = backend.expectOne((request) => request.method === 'PUT');
+    expect(save.request.body.data.personal.name).toBe('Leaving');
+    save.flush({ version: 4 });
+    expect(await leaving).toBe(true);
+  });
+
+  it('asks before leaving edits that cannot be saved', async () => {
+    const fixture = await render();
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    fixture.componentInstance.form()!.controls.personal.controls.name.setValue('');
+
+    expect(await fixture.componentInstance.canLeave()).toBe(false);
+
+    expect(confirm).toHaveBeenCalledWith(expect.stringContaining('not saved'));
+    backend.expectNone((request) => request.method === 'PUT');
+    confirm.mockRestore();
+  });
+
+  it('leaves without asking when everything is saved', async () => {
+    const fixture = await render();
+    const confirm = vi.spyOn(window, 'confirm');
+
+    expect(await fixture.componentInstance.canLeave()).toBe(true);
+
+    expect(confirm).not.toHaveBeenCalled();
+    confirm.mockRestore();
+  });
+
+  it('warns before closing the tab with unsaved edits', async () => {
+    const fixture = await render();
+    const clean = new Event('beforeunload', { cancelable: true });
+    window.dispatchEvent(clean);
+    expect(clean.defaultPrevented).toBe(false);
+
+    fixture.componentInstance.form()!.controls.personal.controls.name.setValue('Typed');
+    const dirty = new Event('beforeunload', { cancelable: true });
+    window.dispatchEvent(dirty);
+
+    expect(dirty.defaultPrevented).toBe(true);
+  });
 });

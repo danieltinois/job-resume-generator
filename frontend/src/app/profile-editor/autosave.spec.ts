@@ -157,4 +157,60 @@ describe('Autosave', () => {
 
     await vi.waitFor(() => expect(autosave.status()).toBe('saved'));
   });
+  it('reports unsaved changes from the first keystroke until they are saved', async () => {
+    expect(autosave.hasUnsavedChanges()).toBe(false);
+
+    rename('Typed');
+
+    expect(autosave.status()).toBe('unsaved');
+    expect(autosave.hasUnsavedChanges()).toBe(true);
+    await vi.advanceTimersByTimeAsync(1500);
+    backend.expectOne('/api/profile').flush({ version: 4 });
+    await vi.waitFor(() => expect(autosave.status()).toBe('saved'));
+    expect(autosave.hasUnsavedChanges()).toBe(false);
+  });
+
+  it('flush sends pending edits without waiting for the pause, and settles after the save', async () => {
+    rename('Leaving');
+    let settled = false;
+
+    const flushed = autosave.flush().then(() => (settled = true));
+
+    const request = backend.expectOne('/api/profile');
+    expect(request.request.body.data.personal.name).toBe('Leaving');
+    await vi.advanceTimersByTimeAsync(0);
+    expect(settled).toBe(false);
+    request.flush({ version: 4 });
+    await flushed;
+    expect(autosave.hasUnsavedChanges()).toBe(false);
+    await vi.advanceTimersByTimeAsync(2000);
+    backend.expectNone('/api/profile');
+  });
+
+  it('flush waits for the save in flight, then sends what changed during it', async () => {
+    rename('First');
+    void autosave.saveNow();
+    const first = backend.expectOne('/api/profile');
+    rename('Second');
+
+    const flushed = autosave.flush();
+    first.flush({ version: 4 });
+
+    await vi.waitFor(() => {
+      const second = backend.expectOne('/api/profile');
+      expect(second.request.body.data.personal.name).toBe('Second');
+      second.flush({ version: 5 });
+    });
+    await flushed;
+    expect(autosave.hasUnsavedChanges()).toBe(false);
+  });
+
+  it('keeps reporting edits that could not be saved', async () => {
+    rename('');
+
+    await autosave.flush();
+
+    backend.expectNone('/api/profile');
+    expect(autosave.hasUnsavedChanges()).toBe(true);
+  });
 });
