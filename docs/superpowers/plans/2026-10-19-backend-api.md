@@ -187,7 +187,7 @@ Each has a test in its owning task (marked *Review Focus*).
   - `GET /api/auth/providers` → `{google: boolean}`.
 
 - [ ] **Step 1: Write failing tests:**
-  - `GoogleAccountLinkerTest`: `knownSubSignsIn`; `verifiedEmailLinksExistingAccount` (password account keeps its password, gains `google_sub`); `newGoogleUserIsCreatedVerified`; `unverifiedGoogleEmailDoesNotTakeOverAccount`.
+  - `GoogleAccountLinkerTest`: `knownSubSignsIn`; `verifiedEmailLinksExistingAccount` (a **verified** password account keeps its password, gains `google_sub`); `unverifiedPasswordAccountLosesItsPasswordWhenGoogleClaimsTheEmail` (pre-hijacking: the password and all pending tokens of an unverified account are discarded — added after the final review); `newGoogleUserIsCreatedVerified`; `unverifiedGoogleEmailDoesNotTakeOverAccount`.
   - `GoogleLoginSuccessHandlerTest`: invoke the handler with an `OAuth2AuthenticationToken` built from an `OidcUser` → 302 to `{baseUrl}/auth/callback`, refresh cookie set, and that cookie works on `/api/auth/refresh`.
   - `ProvidersControllerTest`: `googleDisabledWithoutCredentials` → `{google: false}`; with properties set in a nested `@SpringBootTest(properties=…)` → `{google: true}`.
 - [ ] **Step 2:** Run `./mvnw -q test -Dtest='Google*Test,ProvidersControllerTest'`. Expected: FAIL.

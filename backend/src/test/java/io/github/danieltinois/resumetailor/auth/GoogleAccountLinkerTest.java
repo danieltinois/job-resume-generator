@@ -17,6 +17,9 @@ class GoogleAccountLinkerTest extends IntegrationTest {
     @Autowired
     UserRepository users;
 
+    @Autowired
+    TokenStore tokens;
+
     @Test
     void knownSubSignsIn() {
         User first = linker.link("google-123", "alex@example.com", true, "Alex");
@@ -28,7 +31,7 @@ class GoogleAccountLinkerTest extends IntegrationTest {
 
     @Test
     void verifiedEmailLinksExistingAccount() {
-        User existing = users.create("alex@example.com", "bcrypt-hash", "Alex", false);
+        User existing = users.create("alex@example.com", "bcrypt-hash", "Alex", true);
 
         User linked = linker.link("google-123", "Alex@Example.com", true, "Alex G");
 
@@ -36,6 +39,23 @@ class GoogleAccountLinkerTest extends IntegrationTest {
         assertThat(linked.googleSub()).isEqualTo("google-123");
         assertThat(linked.passwordHash()).isEqualTo("bcrypt-hash");
         assertThat(linked.emailVerified()).isTrue();
+    }
+
+    @Test
+    void unverifiedPasswordAccountLosesItsPasswordWhenGoogleClaimsTheEmail() {
+        // Pre-hijacking: someone registered the victim's email with their own password
+        // and never verified it. Google proves the victim owns the email.
+        User planted = users.create("victim@example.com", "attacker-hash", "Mallory", false);
+        String attackerSession = tokens.issue(planted.id(), TokenType.REFRESH, java.time.Duration.ofDays(1),
+                java.util.UUID.randomUUID());
+        String pendingLink = tokens.issue(planted.id(), TokenType.VERIFY_EMAIL, java.time.Duration.ofDays(1), null);
+
+        User linked = linker.link("google-victim", "victim@example.com", true, "Victim");
+
+        assertThat(linked.passwordHash()).isNull();
+        assertThat(linked.emailVerified()).isTrue();
+        assertThat(tokens.consume(attackerSession, TokenType.REFRESH)).isEmpty();
+        assertThat(tokens.consume(pendingLink, TokenType.VERIFY_EMAIL)).isEmpty();
     }
 
     @Test
