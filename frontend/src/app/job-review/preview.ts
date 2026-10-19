@@ -24,7 +24,8 @@ export class Preview {
         tap(() => this.loading.set(true)),
         switchMap((request) =>
           http.post('/api/resumes/preview', request, { responseType: 'blob' }).pipe(
-            map((pdf): Blob | null => pdf),
+            // The iframe is same-origin: never let a response's own type make it render as HTML.
+            map((pdf): Blob | null => new Blob([pdf], { type: 'application/pdf' })),
             catchError(() => of(null)),
           ),
         ),

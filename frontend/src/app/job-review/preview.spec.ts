@@ -83,4 +83,14 @@ describe('Preview', () => {
 
     expect(preview.failed()).toBe(false);
   });
+
+  it('shows the response only as a PDF, whatever type the server sent', async () => {
+    requests.next(request('PT'));
+    await vi.advanceTimersByTimeAsync(500);
+
+    backend.expectOne('/api/resumes/preview').flush(new Blob(['<script>x</script>'], { type: 'text/html' }));
+
+    const shown = vi.mocked(URL.createObjectURL).mock.calls[0][0] as Blob;
+    expect(shown.type).toBe('application/pdf');
+  });
 });
