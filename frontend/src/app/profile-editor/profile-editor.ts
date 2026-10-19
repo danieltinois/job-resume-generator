@@ -4,13 +4,17 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormArray, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { catchError, of } from 'rxjs';
+import { catchError, firstValueFrom, of } from 'rxjs';
 import type { Profile, StoredProfile, TechTerm } from '../core/api/types';
 import { fieldError } from '../core/forms/field-error';
 import { I18n } from '../core/i18n/i18n';
+import { Autosave, type ConflictChoice, type SaveStatus } from './autosave';
+import { ConflictDialog } from './conflict-dialog';
 import { ExperienceCard } from './experience-card';
+import { ImportDialog } from './import-dialog';
 import { type EditLanguage, LocalizedField } from './localized-field';
 import {
   type ProfileForm,
@@ -53,12 +57,15 @@ const SECTIONS: ProfileSection[] = [
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './profile-editor.html',
   styleUrl: './profile-editor.scss',
+  host: { '(document:keydown)': 'onKeydown($event)' },
 })
 export class ProfileEditor {
   protected readonly i18n = inject(I18n);
   protected readonly fieldError = fieldError;
   private readonly http = inject(HttpClient);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly dialog = inject(MatDialog);
+  private readonly current = signal<Autosave | null>(null);
 
   /** The form, once the profile has loaded. */
   readonly form = signal<ProfileForm | null>(null);
@@ -67,6 +74,7 @@ export class ProfileEditor {
   /** The profile as last edited, for badges and suggestions. */
   readonly value = signal<Profile | null>(null);
 
+  protected readonly status = computed<SaveStatus>(() => this.current()?.status() ?? 'idle');
   protected readonly mode = signal<EditLanguage>('pt');
   protected readonly expanded = signal<string | null>(null);
   protected readonly terms = toSignal(
@@ -99,15 +107,58 @@ export class ProfileEditor {
       .get<StoredProfile>('/api/profile')
       .pipe(takeUntilDestroyed())
       .subscribe((stored) => this.load(stored));
+    this.destroyRef.onDestroy(() => this.current()?.stop());
   }
 
   /** Replaces the form with a profile from the server (initial load, conflict reload, import). */
   load(stored: StoredProfile): void {
+    this.current()?.stop();
     const form = buildProfileForm(stored.data ?? {});
     this.version.set(stored.version ?? 0);
     this.form.set(form);
     this.value.set(toProfile(form));
     form.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.value.set(toProfile(form)));
+
+    const autosave = new Autosave(this.http, form, this.version, {
+      resolveConflict: () => this.askConflict(),
+      reload: (latest) => this.load(latest),
+    });
+    autosave.start();
+    this.current.set(autosave);
+  }
+
+  protected onKeydown(event: KeyboardEvent): void {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
+      event.preventDefault();
+      void this.current()?.saveNow();
+    }
+  }
+
+  protected async openImport(): Promise<void> {
+    const imported = await firstValueFrom(this.dialog.open(ImportDialog, { width: '520px' }).afterClosed());
+    if (imported) {
+      // Keep the version: the import replaces the content, and the save that follows must still be current.
+      this.load({ version: this.version(), data: imported });
+      this.form()?.markAsDirty();
+      await this.current()?.saveNow();
+    }
+  }
+
+  protected async exportProfile(): Promise<void> {
+    const file = await firstValueFrom(this.http.get('/api/profile/export', { responseType: 'blob' }));
+    const url = URL.createObjectURL(file);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'profile.json';
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  private async askConflict(): Promise<ConflictChoice> {
+    const choice = await firstValueFrom(
+      this.dialog.open<ConflictDialog, unknown, ConflictChoice>(ConflictDialog, { disableClose: true }).afterClosed(),
+    );
+    return choice ?? 'keep';
   }
 
   protected toggle(id: string): void {

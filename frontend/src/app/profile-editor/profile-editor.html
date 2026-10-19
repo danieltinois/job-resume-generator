@@ -7,6 +7,18 @@
     <form class="content" [formGroup]="form" (submit)="$event.preventDefault()">
       <header class="page-header">
         <h1>{{ i18n.t('profile.title') }}</h1>
+        <span class="status" data-test="save-status" role="status" [class.problem]="status() === 'invalid' || status() === 'error' || status() === 'conflict'">
+          @switch (status()) {
+            @case ('saving') { {{ i18n.t('profile.status.saving') }} }
+            @case ('saved') { {{ i18n.t('profile.status.saved') }} }
+            @case ('invalid') { {{ i18n.t('profile.status.invalid') }} }
+            @case ('error') { {{ i18n.t('profile.status.error') }} }
+            @case ('conflict') { {{ i18n.t('profile.status.conflict') }} }
+          }
+        </span>
+        <span class="spacer"></span>
+        <button mat-button type="button" (click)="openImport()">{{ i18n.t('profile.import.open') }}</button>
+        <button mat-button type="button" data-test="export" (click)="exportProfile()">{{ i18n.t('profile.export') }}</button>
         <mat-button-toggle-group
           [value]="mode()"
           (change)="mode.set($event.value)"

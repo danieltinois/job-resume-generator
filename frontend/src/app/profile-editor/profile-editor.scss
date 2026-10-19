@@ -64,3 +64,15 @@ section {
   text-align: center;
   margin-top: 48px;
 }
+
+.spacer {
+  flex: 1;
+}
+
+.status {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.status.problem {
+  color: var(--mat-sys-error);
+}
