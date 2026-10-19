@@ -1,0 +1,12 @@
+#!/bin/sh
+# Rejects AI attribution and bot author identities. See AGENTS.md, rules 1.1-1.2.
+
+hooks_dir=$(dirname "$0")
+"$hooks_dir/check-commit-message.sh" "$1" || exit 1
+
+author=$(git var GIT_AUTHOR_IDENT | sed 's/>.*/>/')
+if echo "$author" | grep -Eiq 'noreply@anthropic\.com|^claude |\[bot\]'; then
+  echo "guardrails: commit author is '$author'. Commit as the repository owner (AGENTS.md, rule 1.2):" >&2
+  echo "  git config user.name danieltinois && git config user.email danieltinois@gmail.com" >&2
+  exit 1
+fi

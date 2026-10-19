@@ -1,0 +1,40 @@
+#!/bin/sh
+# Enforces git flow branch names and blocks direct pushes to main/develop.
+# See AGENTS.md, rules 1.3-1.5 and section 3.
+#
+# ALLOW_PROTECTED_PUSH=1 lets a push to main/develop through. Use it only when
+# the owner explicitly asked for that push.
+
+zero=0000000000000000000000000000000000000000
+status=0
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  case "$remote_ref" in
+    refs/tags/v[0-9]*) continue ;;
+    refs/tags/*)
+      echo "guardrails: tags must be SemVer releases named vX.Y.Z (got ${remote_ref#refs/tags/})." >&2
+      status=1; continue ;;
+    refs/heads/*) branch=${remote_ref#refs/heads/} ;;
+    *) continue ;;
+  esac
+
+  # Deleting a remote branch is not a push of new work.
+  [ "$local_sha" = "$zero" ] && continue
+
+  case "$branch" in
+    main|develop)
+      if [ "$ALLOW_PROTECTED_PUSH" != "1" ]; then
+        echo "guardrails: direct push to '$branch' is blocked. Push a git flow branch instead (AGENTS.md, rule 1.4)." >&2
+        status=1
+      fi
+      ;;
+    *)
+      if ! echo "$branch" | grep -Eq '^(feature|bugfix|release|hotfix|support)/[a-z0-9][a-z0-9._-]*$'; then
+        echo "guardrails: '$branch' is not a git flow branch name. Use feature/, bugfix/, release/, hotfix/ or support/ + kebab-case (AGENTS.md, section 3)." >&2
+        status=1
+      fi
+      ;;
+  esac
+done
+
+exit $status
