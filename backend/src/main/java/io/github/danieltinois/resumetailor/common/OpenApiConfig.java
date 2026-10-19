@@ -43,22 +43,25 @@ public class OpenApiConfig {
                         .addSecuritySchemes(BEARER, new SecurityScheme()
                                 .type(SecurityScheme.Type.HTTP)
                                 .scheme("bearer")
-                                .bearerFormat("JWT"))
-                        .addSchemas(PROBLEM, problemSchema()));
+                                .bearerFormat("JWT")));
     }
 
     /** Marks protected operations and documents the RFC 7807 error body every operation can return. */
     @Bean
     OpenApiCustomizer securityAndErrors() {
-        return api -> api.getPaths().forEach((path, item) -> item.readOperations().forEach(operation -> {
-            if (!path.startsWith("/api/auth/")) {
-                operation.setSecurity(List.of(new SecurityRequirement().addList(BEARER)));
-            }
-            operation.getResponses().addApiResponse("default", new ApiResponse()
-                    .description("Error, as an RFC 7807 problem")
-                    .content(new Content().addMediaType("application/problem+json",
-                            new MediaType().schema(new Schema<>().$ref("#/components/schemas/" + PROBLEM)))));
-        }));
+        return api -> {
+            // Registered here, after springdoc has collected the schemas of the scanned types.
+            api.getComponents().addSchemas(PROBLEM, problemSchema());
+            api.getPaths().forEach((path, item) -> item.readOperations().forEach(operation -> {
+                if (!path.startsWith("/api/auth/")) {
+                    operation.setSecurity(List.of(new SecurityRequirement().addList(BEARER)));
+                }
+                operation.getResponses().addApiResponse("default", new ApiResponse()
+                        .description("Error, as an RFC 7807 problem")
+                        .content(new Content().addMediaType("application/problem+json",
+                                new MediaType().schema(new Schema<>().$ref("#/components/schemas/" + PROBLEM)))));
+            }));
+        };
     }
 
     private static Schema<?> problemSchema() {

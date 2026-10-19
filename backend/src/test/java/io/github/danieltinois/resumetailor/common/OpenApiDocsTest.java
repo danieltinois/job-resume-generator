@@ -68,6 +68,28 @@ class OpenApiDocsTest {
         }
 
         @Test
+        void problemSchemaReferencedByErrorsIsDefined() throws Exception {
+            JsonNode spec = spec();
+
+            assertThat(spec.at("/paths/~1api~1jobs/get/responses/default/content/application~1problem+json/schema/$ref")
+                    .asString()).isEqualTo("#/components/schemas/Problem");
+            assertThat(spec.at("/components/schemas/Problem/properties/errors").isMissingNode()).isFalse();
+        }
+
+        @Test
+        void jobAndResumeSummariesAreDistinctSchemas() throws Exception {
+            JsonNode spec = spec();
+            String jobs = spec.at("/paths/~1api~1jobs/get/responses/200/content/*~1*/schema/items/$ref").asString();
+            String resumes = spec.at("/paths/~1api~1resumes/get/responses/200/content/*~1*/schema/items/$ref")
+                    .asString();
+
+            assertThat(jobs).isEqualTo("#/components/schemas/JobSummary");
+            assertThat(resumes).isEqualTo("#/components/schemas/ResumeSummary");
+            assertThat(spec.at("/components/schemas/JobSummary/properties/title").isMissingNode()).isFalse();
+            assertThat(spec.at("/components/schemas/ResumeSummary/properties/jobId").isMissingNode()).isFalse();
+        }
+
+        @Test
         void swaggerUiIsServedWithoutAuthentication() throws Exception {
             mvc.perform(get("/swagger-ui/index.html")).andExpect(status().isOk());
             mvc.perform(get("/swagger-ui.html")).andExpect(status().is3xxRedirection());

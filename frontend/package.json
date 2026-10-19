@@ -7,7 +7,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "api:types": "npx -y -p openapi-typescript@7.13.0 -p typescript@5.9.3 openapi-typescript ../docs/api/openapi.json -o src/app/core/api/schema.d.ts"
   },
   "private": true,
   "packageManager": "npm@10.9.9",

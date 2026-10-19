@@ -22,6 +22,10 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - run: npm ci
+      - name: API types match docs/api/openapi.json
+        run: |
+          npm run api:types
+          git diff --exit-code src/app/core/api/schema.d.ts
       - run: npm run lint
       - run: npm test -- --watch=false
       - run: npm run build
