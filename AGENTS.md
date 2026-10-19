@@ -23,6 +23,10 @@ Breaking any of these is a failed task, even if the code works.
    - session links or trailers such as `Claude-Session:`;
    - "Generated with/by Claude/Copilot/ChatGPT/...", robot emojis used as a
      signature, or any model name or model id.
+
+   Some tools append such a footer on their own (the GitHub integration did it
+   on PR #1). After creating or editing a PR, issue or comment, read it back
+   and remove anything that was added.
 2. **Commits are authored as the owner.** Use the repository's existing identity
    (`git log --format='%an <%ae>'`): `danieltinois <danieltinois@gmail.com>`.
    Set it with `git config user.name` / `git config user.email` **locally to

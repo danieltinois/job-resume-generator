@@ -5,6 +5,8 @@ name: guardrails
 on:
   push:
   pull_request:
+    # `edited` re-checks the PR text after a title or body change.
+    types: [opened, synchronize, reopened, edited]
 
 jobs:
   guardrails:
