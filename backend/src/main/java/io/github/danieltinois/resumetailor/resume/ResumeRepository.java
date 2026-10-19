@@ -11,12 +11,14 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
 import io.github.danieltinois.resumetailor.common.Language;
+import io.swagger.v3.oas.annotations.media.Schema;
 import tools.jackson.databind.json.JsonMapper;
 
 /** Saved resumes: the selection and the frozen document, always scoped to their owner. */
 @Repository
 public class ResumeRepository {
 
+    @Schema(name = "ResumeSummary")
     public record Summary(UUID id, UUID jobId, Language language, Instant createdAt) {
     }
 

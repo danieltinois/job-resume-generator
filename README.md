@@ -1,101 +1,120 @@
 # resume-tailor
 
-One `profile.yaml`, one job description, one tailored PDF.
+One profile, many job descriptions, one tailored PDF resume for each.
+
+You fill in your career once, in Portuguese and English. For every job you
+paste, the app finds the skills the job asks for, suggests which experiences
+and achievements to show and in which order, and renders an A4, ATS-friendly
+PDF with [Typst](https://typst.app). You adjust the selection with a live
+preview and save the resume. The text always comes from your profile: the app
+selects and orders, it never writes facts for you.
 
 ```
-profile.yaml + job.md -> python -> resume.json -> typst -> resume.pdf
+profile (PT + EN) + job description -> matching -> selection -> Typst -> resume.pdf
 ```
 
-## Backend (in progress)
+## Run it
 
-The project is moving to a web app: a Spring Boot API (`backend/`) and, next,
-an Angular UI. The design is in
-`docs/superpowers/specs/2026-10-19-spring-angular-migration-design.md`. Until
-the UI lands, the Python CLI below remains the way to generate resumes.
-
-Requirements: Java 21, Docker, and [Typst](https://typst.app) 0.15.0 on `PATH`.
+Requirements: Docker with Compose.
 
 ```bash
-docker compose up -d postgres mailpit          # database + email catcher
-cp .env.example .env                           # then edit JWT_SECRET
-set -a && . ./.env && set +a
-cd backend && ./mvnw spring-boot:run           # API on http://localhost:8080
+cp .env.example .env          # then set JWT_SECRET to a long random string
+docker compose up --build
 ```
 
-Emails (verification, password reset) appear in Mailpit at
-http://localhost:8025. The API is documented in Swagger UI at
-http://localhost:8080/swagger-ui.html (OpenAPI JSON at `/v3/api-docs`): sign in
-with `POST /api/auth/login`, paste the `accessToken` into **Authorize**, and
-every endpoint can be tried from the browser. Set `API_DOCS_ENABLED=false` in
-production. Run the tests with `cd backend && ./mvnw verify`
-(Docker must be running: integration tests use Testcontainers).
-
-## CLI requirements
-
-- Python 3.11+
-- [Typst](https://typst.app) on `PATH` (`scoop install typst` / `brew install typst` / `winget install Typst.Typst`)
-
-## Install
-
-```bash
-pip install -e ".[dev]"
-```
-
-## First run
-
-Your real career data is **never committed**: `profile/profile.yaml` is in
-`.gitignore`. The repo ships a fictional one.
-
-```bash
-copy profile/profile.example.yaml profile/profile.yaml   # then edit it
-```
-
-## Use
-
-```bash
-python -m resume_tailor.cli analyze  jobs/example.md   # see the ranking, writes nothing
-python -m resume_tailor.cli generate jobs/example.md   # -> output/example/resume.pdf
-```
-
-`generate` writes `output/<job-file-name>/resume.json` (exactly what the template
-renders) and `resume.pdf` next to it.
-
-## Flow
-
-| File | Role |
+| What | URL |
 |---|---|
-| `profile/profile.example.yaml` | Fictional example. Copy it to `profile/profile.yaml`, which stays untracked. |
-| `jobs/*.md` | A job description. Plain Markdown. |
-| `resume_tailor/models.py` | Pydantic schema; rejects duplicate achievement ids. |
-| `resume_tailor/profile.py` | Load + validate the profile. |
-| `resume_tailor/job.py` | Load the job description. |
-| `resume_tailor/matcher.py` | Lexical matching. **The seam where AI plugs in.** |
-| `resume_tailor/generator.py` | Select + order -> `resume.json`. Never rewrites. |
-| `resume_tailor/cli.py` | `analyze` / `generate`, and the Typst call. |
-| `templates/resume.typ` | A4, one column, ATS-friendly. Receives the JSON. |
+| The app | http://localhost:4200 |
+| Emails sent by the app (Mailpit) | http://localhost:8025 |
+| API docs (Swagger UI) | http://localhost:4200/swagger-ui.html |
 
-## Rules for editing `profile.yaml`
+Create an account, open the confirmation link from Mailpit, sign in and fill in
+your profile (or import a `profile.yaml`, below). Then add a job under
+**New job** and review the suggested resume.
 
-- Every achievement **must** have a unique `id`. A future AI pass uses those ids
-  to stay anchored to real facts.
-- Dates are `YYYY-MM`. An empty `end_date` prints as `Present`.
-- V1 never rewrites your text. It selects and orders only.
-- Skills go in `skill_categories`, not in the flat `skills` list, if you want
-  them grouped on the page. The flat `skills` list is only rendered when there
-  are no categories.
+nginx serves the app and proxies the API, so the browser sees a single origin.
+The backend is not published on the host.
 
-```yaml
-skill_categories:
-  - name: Languages
-    skills: [TypeScript, Python]
-  - name: Cloud & Infrastructure
-    skills: [AWS, Docker]
+## Your data
+
+- The profile is stored per user in PostgreSQL. Every free-text field has a
+  Portuguese and an English version; Portuguese is required and English falls
+  back to it, with a warning on the review screen.
+- Experiences, achievements and projects get a stable id when they are
+  created. Editing their text never changes the id, so saved resumes keep
+  pointing at the same facts.
+- **Import:** the profile screen imports a `profile.yaml` in the format of the
+  former command line tool (see `profile/profile.example.yaml`, fictional). You
+  choose whether its text is Portuguese or English. **Export JSON** downloads
+  the whole profile.
+- Real profiles and generated resumes never belong in git:
+  `profile/profile.yaml` and `output/` are ignored.
+
+## Development without Docker for the apps
+
+Requirements: Java 21, Node 22.23.3 (`.nvmrc`), Docker for PostgreSQL and
+Mailpit, and Typst 0.15.0 on `PATH`.
+
+```bash
+docker compose up -d postgres mailpit
+cp .env.example .env                          # then edit JWT_SECRET
+set -a && . ./.env && set +a
+(cd backend && ./mvnw spring-boot:run)        # API on http://localhost:8080
+(cd frontend && npm ci && npm start)          # app on http://localhost:4200
 ```
+
+`npm start` proxies `/api`, the OAuth2 paths and the API docs to the backend on
+port 8080, like nginx does in Compose.
+
+### API types
+
+The frontend's API types are generated from `docs/api/openapi.json`, which a
+backend test keeps in sync with the code. After an API change:
+
+```bash
+cd backend && ./mvnw test -Dtest=OpenApiSnapshotTest -DupdateSnapshot=true
+cd ../frontend && npm run api:types
+```
+
+## Tests
+
+| Area | Command |
+|---|---|
+| Backend | `cd backend && ./mvnw verify` (Docker running: integration tests use Testcontainers) |
+| Frontend | `cd frontend && npm run lint && npm test -- --watch=false && npm run build` |
+| Full stack | `scripts/smoke.sh` (builds, starts, checks and stops Compose) |
+| End to end | `cd frontend && npx playwright install chromium && npm run e2e` (with `docker compose up` running) |
+
+The end-to-end test registers an account, confirms it through Mailpit, imports
+`profile/profile.example.yaml`, analyzes `jobs/example.md`, saves the resume
+and downloads the PDF.
+
+## Sign in with Google (optional)
+
+Without Google credentials the app offers email and password only.
+
+1. In the Google Cloud console, create an OAuth client of type *Web
+   application*.
+2. Add the authorized redirect URI `http://localhost:4200/login/oauth2/code/google`
+   (use your public URL in production).
+3. Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `.env` and restart.
+
+## Production notes
+
+- Serve the app over HTTPS and set `COOKIE_SECURE=true` (the refresh token
+  cookie is `Secure` only then).
+- Set `APP_BASE_URL` to the public URL: it goes into the email links.
+- Set `API_DOCS_ENABLED=false` to turn off Swagger UI and `/v3/api-docs`.
+- Use a real SMTP server (`SMTP_*`, `MAIL_FROM`) instead of Mailpit.
+- The bundled nginx expects to be the edge: it passes the connection's address
+  as the client address. Behind another load balancer, configure nginx's
+  `real_ip` module for it, or the login rate limit counts the balancer.
 
 ## The template
 
-`templates/resume.typ` is the only presentation code. Two Typst behaviours to
-know before editing it, both of which have already bitten this file:
+`backend/src/main/resources/typst/resume.typ`, with its fonts next to it, is the
+only presentation code. Two Typst behaviours to know before editing it, both of
+which have already broken it once:
 
 - **Never use `luma(0.4)` with a bare number.** In Typst 0.15 it evaluates to
   white, which renders an entire resume invisible on a white page. The template
@@ -110,17 +129,14 @@ ATS section detection breaks.
 
 ## Adding AI later
 
-`matcher.rank()` returns a `Match`. Everything downstream — `generator.build()`,
-the Typst template, the CLI — only ever consumes that object. To add AI, write a
-new `rank()` that reads the job semantically and returns the same `Match`
-(possibly with AI-rewritten bullets in the selected achievements). Nothing else
-in the codebase needs to change.
+Matching goes through the `MatchingStrategy` interface in the backend's
+`matching` package. An AI matcher is a new implementation that reads the job
+and returns the same result; nothing downstream changes. It may select, order
+and, in a future pass, reword. It may **never** invent a company, role,
+technology, metric or achievement: the resume assembler only copies text from
+the profile by id and rejects unknown ids.
 
-The AI may select, order and rewrite. It may **never** invent a company, role,
-technology, metric or achievement id that is not in `profile.yaml`.
+## Contributing
 
-## Tests
-
-```bash
-pytest
-```
+Read `AGENTS.md` first: git flow, Conventional Commits and the guardrail hooks
+(`git config core.hooksPath .githooks`).

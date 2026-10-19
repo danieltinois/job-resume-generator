@@ -1,0 +1,31 @@
+name: frontend
+
+on:
+  push:
+    paths: ["frontend/**", "docs/api/**", ".nvmrc", ".github/workflows/frontend.yml"]
+  pull_request:
+    paths: ["frontend/**", "docs/api/**", ".nvmrc", ".github/workflows/frontend.yml"]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+      - name: API types match docs/api/openapi.json
+        run: |
+          npm run api:types
+          git diff --exit-code src/app/core/api/schema.d.ts
+      - run: npm run lint
+      - run: npm test -- --watch=false
+      - run: npm run build

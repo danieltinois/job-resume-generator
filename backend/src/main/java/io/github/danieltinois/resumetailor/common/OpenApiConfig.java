@@ -1,6 +1,8 @@
 package io.github.danieltinois.resumetailor.common;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -43,22 +45,52 @@ public class OpenApiConfig {
                         .addSecuritySchemes(BEARER, new SecurityScheme()
                                 .type(SecurityScheme.Type.HTTP)
                                 .scheme("bearer")
-                                .bearerFormat("JWT"))
-                        .addSchemas(PROBLEM, problemSchema()));
+                                .bearerFormat("JWT")));
     }
 
     /** Marks protected operations and documents the RFC 7807 error body every operation can return. */
     @Bean
     OpenApiCustomizer securityAndErrors() {
-        return api -> api.getPaths().forEach((path, item) -> item.readOperations().forEach(operation -> {
-            if (!path.startsWith("/api/auth/")) {
-                operation.setSecurity(List.of(new SecurityRequirement().addList(BEARER)));
+        return api -> {
+            api.getComponents().getSchemas().values().forEach(OpenApiConfig::allowNulls);
+            // Registered here, after springdoc has collected the schemas of the scanned types.
+            api.getComponents().addSchemas(PROBLEM, problemSchema());
+            api.getPaths().forEach((path, item) -> item.readOperations().forEach(operation -> {
+                if (!path.startsWith("/api/auth/")) {
+                    operation.setSecurity(List.of(new SecurityRequirement().addList(BEARER)));
+                }
+                operation.getResponses().addApiResponse("default", new ApiResponse()
+                        .description("Error, as an RFC 7807 problem")
+                        .content(new Content().addMediaType("application/problem+json",
+                                new MediaType().schema(new Schema<>().$ref("#/components/schemas/" + PROBLEM)))));
+            }));
+        };
+    }
+
+    /**
+     * Record components without a primitive type can be null on the wire (an
+     * unset English text, an open end date, an absent summary) and Jackson
+     * writes them as null. Lists are always present and primitives never null.
+     * Declaring this keeps the generated frontend types honest.
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private static void allowNulls(Schema<?> schema) {
+        if (schema.getProperties() == null) {
+            return;
+        }
+        Map<String, Schema> nullable = new LinkedHashMap<>();
+        schema.getProperties().forEach((name, property) -> {
+            if (property.get$ref() != null) {
+                Schema nullType = new Schema();
+                nullType.addType("null");
+                Schema refOrNull = new Schema();
+                refOrNull.setAnyOf(List.<Schema>of(new Schema().$ref(property.get$ref()), nullType));
+                nullable.put(name, refOrNull);
+            } else if (property.getTypes() != null && property.getTypes().contains("string")) {
+                property.addType("null");
             }
-            operation.getResponses().addApiResponse("default", new ApiResponse()
-                    .description("Error, as an RFC 7807 problem")
-                    .content(new Content().addMediaType("application/problem+json",
-                            new MediaType().schema(new Schema<>().$ref("#/components/schemas/" + PROBLEM)))));
-        }));
+        });
+        schema.getProperties().putAll(nullable);
     }
 
     private static Schema<?> problemSchema() {
