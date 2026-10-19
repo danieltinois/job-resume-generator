@@ -1,14 +1,19 @@
 package io.github.danieltinois.resumetailor.auth;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import io.github.danieltinois.resumetailor.IntegrationTest;
 
@@ -44,6 +49,17 @@ class ProvidersControllerTest {
             mvc.perform(get("/oauth2/authorization/google"))
                     .andExpect(status().is3xxRedirection())
                     .andExpect(header().string("Location", startsWith("https://accounts.google.com/")));
+        }
+
+        @Test
+        void googleReturnsToThePublicUrlWhateverHostTheProxySends() throws Exception {
+            String location = mvc.perform(get("/oauth2/authorization/google").header("Host", "backend:8080"))
+                    .andReturn().getResponse().getHeader("Location");
+
+            String redirectUri = UriComponentsBuilder.fromUriString(location).build().getQueryParams()
+                    .getFirst("redirect_uri");
+            assertThat(URLDecoder.decode(redirectUri, StandardCharsets.UTF_8))
+                    .isEqualTo("http://app.test/login/oauth2/code/google");
         }
     }
 }
