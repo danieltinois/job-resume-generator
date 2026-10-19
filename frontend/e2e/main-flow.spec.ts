@@ -67,6 +67,8 @@ test('registers, imports a profile, tailors a resume and downloads the PDF', asy
 
   await test.step('sign out', async () => {
     await page.getByRole('button', { name: 'Sign out' }).click();
+    // Signed out once the server has ended the session and the toolbar shows it.
+    await expect(page.getByRole('button', { name: 'Sign out' })).toBeHidden();
     await page.goto('/profile');
     await expect(page).toHaveURL(/\/login/);
   });
