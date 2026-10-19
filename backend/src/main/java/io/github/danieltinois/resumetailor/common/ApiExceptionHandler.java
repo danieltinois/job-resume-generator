@@ -20,6 +20,7 @@ import io.github.danieltinois.resumetailor.auth.AuthException;
 import io.github.danieltinois.resumetailor.profile.InvalidImportException;
 import io.github.danieltinois.resumetailor.profile.ProfileValidationException;
 import io.github.danieltinois.resumetailor.profile.VersionConflictException;
+import io.github.danieltinois.resumetailor.resume.UnknownSelectionIdException;
 
 /**
  * Every error leaves as an RFC 7807 problem. Validation errors list the
@@ -57,6 +58,11 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return validation(e.violations().stream()
                 .map(violation -> Map.of("path", violation.path(), "message", violation.message()))
                 .toList());
+    }
+
+    @ExceptionHandler(UnknownSelectionIdException.class)
+    ProblemDetail unknownSelection(UnknownSelectionIdException e) {
+        return validation(List.of(Map.of("path", "selection", "message", e.getMessage())));
     }
 
     @ExceptionHandler(VersionConflictException.class)
