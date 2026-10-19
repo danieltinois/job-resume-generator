@@ -370,89 +370,89 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         AccessToken: {
-            accessToken?: string;
+            accessToken?: string | null;
         };
         Achievement: {
-            id?: string;
+            id?: string | null;
             skills?: string[];
-            text?: components["schemas"]["LocalizedText"];
+            text?: components["schemas"]["LocalizedText"] | null;
         };
         Analysis: {
-            /** @enum {string} */
-            language?: "PT" | "EN";
+            /** @enum {string|null} */
+            language?: "PT" | "EN" | null;
             matchedSkills?: string[];
             missingSkills?: string[];
             scores?: {
                 [key: string]: number;
             };
-            suggestion?: components["schemas"]["Selection"];
+            suggestion?: components["schemas"]["Selection"] | null;
             warnings?: string[];
         };
         CreateRequest: {
-            description: string;
+            description: string | null;
         };
         Created: {
             /** Format: uuid */
-            id?: string;
+            id?: string | null;
             warnings?: string[];
         };
         Education: {
-            degree?: components["schemas"]["LocalizedText"];
-            endDate?: string;
-            id?: string;
-            institution?: string;
-            startDate?: string;
+            degree?: components["schemas"]["LocalizedText"] | null;
+            endDate?: string | null;
+            id?: string | null;
+            institution?: string | null;
+            startDate?: string | null;
         };
         EmailRequest: {
-            email: string;
+            email: string | null;
         };
         Experience: {
             achievements?: components["schemas"]["Achievement"][];
-            company?: string;
-            endDate?: string;
-            id?: string;
-            role?: components["schemas"]["LocalizedText"];
-            startDate?: string;
+            company?: string | null;
+            endDate?: string | null;
+            id?: string | null;
+            role?: components["schemas"]["LocalizedText"] | null;
+            startDate?: string | null;
         };
         JobSummary: {
-            company?: string;
+            company?: string | null;
             /** Format: date-time */
-            createdAt?: string;
+            createdAt?: string | null;
             /** Format: uuid */
-            id?: string;
-            /** @enum {string} */
-            language?: "PT" | "EN";
-            title?: string;
+            id?: string | null;
+            /** @enum {string|null} */
+            language?: "PT" | "EN" | null;
+            title?: string | null;
         };
         LanguageSkill: {
-            level?: components["schemas"]["LocalizedText"];
-            name?: components["schemas"]["LocalizedText"];
+            level?: components["schemas"]["LocalizedText"] | null;
+            name?: components["schemas"]["LocalizedText"] | null;
         };
         LocalizedText: {
-            en?: string;
-            pt?: string;
+            en?: string | null;
+            pt?: string | null;
         };
         LoginRequest: {
-            email: string;
-            password: string;
+            email: string | null;
+            password: string | null;
         };
         Me: {
-            email?: string;
+            email?: string | null;
             emailVerified?: boolean;
             hasGoogle?: boolean;
             hasPassword?: boolean;
             /** Format: uuid */
-            id?: string;
-            name?: string;
+            id?: string | null;
+            name?: string | null;
         };
         Personal: {
-            email?: string;
-            github?: string;
-            linkedin?: string;
-            location?: string;
-            name?: string;
-            phone?: string;
-            title?: components["schemas"]["LocalizedText"];
+            email?: string | null;
+            github?: string | null;
+            linkedin?: string | null;
+            location?: string | null;
+            name?: string | null;
+            phone?: string | null;
+            title?: components["schemas"]["LocalizedText"] | null;
         };
         Problem: {
             detail?: string;
@@ -474,50 +474,50 @@ export interface components {
             education?: components["schemas"]["Education"][];
             experiences?: components["schemas"]["Experience"][];
             languages?: components["schemas"]["LanguageSkill"][];
-            personal?: components["schemas"]["Personal"];
+            personal?: components["schemas"]["Personal"] | null;
             projects?: components["schemas"]["Project"][];
             skillCategories?: components["schemas"]["SkillCategory"][];
-            summary?: components["schemas"]["LocalizedText"];
+            summary?: components["schemas"]["LocalizedText"] | null;
         };
         Project: {
-            description?: components["schemas"]["LocalizedText"];
-            id?: string;
-            name?: string;
+            description?: components["schemas"]["LocalizedText"] | null;
+            id?: string | null;
+            name?: string | null;
             skills?: string[];
-            url?: string;
+            url?: string | null;
         };
         Providers: {
             google?: boolean;
         };
         RegisterRequest: {
             /** Format: email */
-            email: string;
-            name: string;
-            password: string;
+            email: string | null;
+            name: string | null;
+            password: string | null;
         };
         ResetRequest: {
-            password: string;
-            token: string;
+            password: string | null;
+            token: string | null;
         };
         ResumeRequest: {
             /** Format: uuid */
-            jobId: string;
-            /** @enum {string} */
-            language: "PT" | "EN";
-            selection: components["schemas"]["Selection"];
+            jobId: string | null;
+            /** @enum {string|null} */
+            language: "PT" | "EN" | null;
+            selection: components["schemas"]["Selection"] | null;
         };
         ResumeSummary: {
             /** Format: date-time */
-            createdAt?: string;
+            createdAt?: string | null;
             /** Format: uuid */
-            id?: string;
+            id?: string | null;
             /** Format: uuid */
-            jobId?: string;
-            /** @enum {string} */
-            language?: "PT" | "EN";
+            jobId?: string | null;
+            /** @enum {string|null} */
+            language?: "PT" | "EN" | null;
         };
         SaveRequest: {
-            data: components["schemas"]["Profile"];
+            data: components["schemas"]["Profile"] | null;
             /** Format: int32 */
             version: number;
         };
@@ -536,32 +536,32 @@ export interface components {
             };
         };
         SkillCategory: {
-            id?: string;
-            name?: components["schemas"]["LocalizedText"];
+            id?: string | null;
+            name?: components["schemas"]["LocalizedText"] | null;
             skills?: string[];
         };
         StoredJob: {
-            company?: string;
+            company?: string | null;
             /** Format: date-time */
-            createdAt?: string;
-            description?: string;
+            createdAt?: string | null;
+            description?: string | null;
             /** Format: uuid */
-            id?: string;
-            /** @enum {string} */
-            language?: "PT" | "EN";
-            title?: string;
+            id?: string | null;
+            /** @enum {string|null} */
+            language?: "PT" | "EN" | null;
+            title?: string | null;
         };
         StoredProfile: {
-            data?: components["schemas"]["Profile"];
+            data?: components["schemas"]["Profile"] | null;
             /** Format: int32 */
             version?: number;
         };
         TechTerm: {
             aliases?: string[];
-            canonical?: string;
+            canonical?: string | null;
         };
         TokenRequest: {
-            token: string;
+            token: string | null;
         };
     };
     responses: never;

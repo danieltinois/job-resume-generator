@@ -4,7 +4,7 @@
       "AccessToken" : {
         "properties" : {
           "accessToken" : {
-            "type" : "string"
+            "type" : [ "string", "null" ]
           }
         },
         "type" : "object"
@@ -12,7 +12,7 @@
       "Achievement" : {
         "properties" : {
           "id" : {
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "skills" : {
             "items" : {
@@ -21,7 +21,11 @@
             "type" : "array"
           },
           "text" : {
-            "$ref" : "#/components/schemas/LocalizedText"
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/LocalizedText"
+            }, {
+              "type" : "null"
+            } ]
           }
         },
         "type" : "object"
@@ -30,7 +34,7 @@
         "properties" : {
           "language" : {
             "enum" : [ "PT", "EN" ],
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "matchedSkills" : {
             "items" : {
@@ -52,7 +56,11 @@
             "type" : "object"
           },
           "suggestion" : {
-            "$ref" : "#/components/schemas/Selection"
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/Selection"
+            }, {
+              "type" : "null"
+            } ]
           },
           "warnings" : {
             "items" : {
@@ -68,7 +76,7 @@
           "description" : {
             "maxLength" : 50000,
             "minLength" : 0,
-            "type" : "string"
+            "type" : [ "string", "null" ]
           }
         },
         "required" : [ "description" ],
@@ -78,7 +86,7 @@
         "properties" : {
           "id" : {
             "format" : "uuid",
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "warnings" : {
             "items" : {
@@ -92,19 +100,23 @@
       "Education" : {
         "properties" : {
           "degree" : {
-            "$ref" : "#/components/schemas/LocalizedText"
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/LocalizedText"
+            }, {
+              "type" : "null"
+            } ]
           },
           "endDate" : {
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "id" : {
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "institution" : {
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "startDate" : {
-            "type" : "string"
+            "type" : [ "string", "null" ]
           }
         },
         "type" : "object"
@@ -114,7 +126,7 @@
           "email" : {
             "maxLength" : 254,
             "minLength" : 0,
-            "type" : "string"
+            "type" : [ "string", "null" ]
           }
         },
         "required" : [ "email" ],
@@ -129,19 +141,23 @@
             "type" : "array"
           },
           "company" : {
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "endDate" : {
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "id" : {
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "role" : {
-            "$ref" : "#/components/schemas/LocalizedText"
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/LocalizedText"
+            }, {
+              "type" : "null"
+            } ]
           },
           "startDate" : {
-            "type" : "string"
+            "type" : [ "string", "null" ]
           }
         },
         "type" : "object"
@@ -149,22 +165,22 @@
       "JobSummary" : {
         "properties" : {
           "company" : {
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "createdAt" : {
             "format" : "date-time",
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "id" : {
             "format" : "uuid",
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "language" : {
             "enum" : [ "PT", "EN" ],
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "title" : {
-            "type" : "string"
+            "type" : [ "string", "null" ]
           }
         },
         "type" : "object"
@@ -172,10 +188,18 @@
       "LanguageSkill" : {
         "properties" : {
           "level" : {
-            "$ref" : "#/components/schemas/LocalizedText"
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/LocalizedText"
+            }, {
+              "type" : "null"
+            } ]
           },
           "name" : {
-            "$ref" : "#/components/schemas/LocalizedText"
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/LocalizedText"
+            }, {
+              "type" : "null"
+            } ]
           }
         },
         "type" : "object"
@@ -183,10 +207,10 @@
       "LocalizedText" : {
         "properties" : {
           "en" : {
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "pt" : {
-            "type" : "string"
+            "type" : [ "string", "null" ]
           }
         },
         "type" : "object"
@@ -196,11 +220,11 @@
           "email" : {
             "maxLength" : 254,
             "minLength" : 0,
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "password" : {
             "minLength" : 1,
-            "type" : "string"
+            "type" : [ "string", "null" ]
           }
         },
         "required" : [ "email", "password" ],
@@ -209,7 +233,7 @@
       "Me" : {
         "properties" : {
           "email" : {
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "emailVerified" : {
             "type" : "boolean"
@@ -222,10 +246,10 @@
           },
           "id" : {
             "format" : "uuid",
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "name" : {
-            "type" : "string"
+            "type" : [ "string", "null" ]
           }
         },
         "type" : "object"
@@ -233,25 +257,29 @@
       "Personal" : {
         "properties" : {
           "email" : {
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "github" : {
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "linkedin" : {
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "location" : {
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "name" : {
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "phone" : {
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "title" : {
-            "$ref" : "#/components/schemas/LocalizedText"
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/LocalizedText"
+            }, {
+              "type" : "null"
+            } ]
           }
         },
         "type" : "object"
@@ -312,7 +340,11 @@
             "type" : "array"
           },
           "personal" : {
-            "$ref" : "#/components/schemas/Personal"
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/Personal"
+            }, {
+              "type" : "null"
+            } ]
           },
           "projects" : {
             "items" : {
@@ -327,7 +359,11 @@
             "type" : "array"
           },
           "summary" : {
-            "$ref" : "#/components/schemas/LocalizedText"
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/LocalizedText"
+            }, {
+              "type" : "null"
+            } ]
           }
         },
         "type" : "object"
@@ -335,13 +371,17 @@
       "Project" : {
         "properties" : {
           "description" : {
-            "$ref" : "#/components/schemas/LocalizedText"
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/LocalizedText"
+            }, {
+              "type" : "null"
+            } ]
           },
           "id" : {
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "name" : {
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "skills" : {
             "items" : {
@@ -350,7 +390,7 @@
             "type" : "array"
           },
           "url" : {
-            "type" : "string"
+            "type" : [ "string", "null" ]
           }
         },
         "type" : "object"
@@ -369,17 +409,17 @@
             "format" : "email",
             "maxLength" : 254,
             "minLength" : 0,
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "name" : {
             "maxLength" : 100,
             "minLength" : 0,
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "password" : {
             "maxLength" : 2147483647,
             "minLength" : 8,
-            "type" : "string"
+            "type" : [ "string", "null" ]
           }
         },
         "required" : [ "email", "name", "password" ],
@@ -390,11 +430,11 @@
           "password" : {
             "maxLength" : 2147483647,
             "minLength" : 8,
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "token" : {
             "minLength" : 1,
-            "type" : "string"
+            "type" : [ "string", "null" ]
           }
         },
         "required" : [ "password", "token" ],
@@ -404,14 +444,18 @@
         "properties" : {
           "jobId" : {
             "format" : "uuid",
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "language" : {
             "enum" : [ "PT", "EN" ],
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "selection" : {
-            "$ref" : "#/components/schemas/Selection"
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/Selection"
+            }, {
+              "type" : "null"
+            } ]
           }
         },
         "required" : [ "jobId", "language", "selection" ],
@@ -421,19 +465,19 @@
         "properties" : {
           "createdAt" : {
             "format" : "date-time",
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "id" : {
             "format" : "uuid",
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "jobId" : {
             "format" : "uuid",
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "language" : {
             "enum" : [ "PT", "EN" ],
-            "type" : "string"
+            "type" : [ "string", "null" ]
           }
         },
         "type" : "object"
@@ -441,7 +485,11 @@
       "SaveRequest" : {
         "properties" : {
           "data" : {
-            "$ref" : "#/components/schemas/Profile"
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/Profile"
+            }, {
+              "type" : "null"
+            } ]
           },
           "version" : {
             "format" : "int32",
@@ -499,10 +547,14 @@
       "SkillCategory" : {
         "properties" : {
           "id" : {
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "name" : {
-            "$ref" : "#/components/schemas/LocalizedText"
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/LocalizedText"
+            }, {
+              "type" : "null"
+            } ]
           },
           "skills" : {
             "items" : {
@@ -516,25 +568,25 @@
       "StoredJob" : {
         "properties" : {
           "company" : {
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "createdAt" : {
             "format" : "date-time",
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "description" : {
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "id" : {
             "format" : "uuid",
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "language" : {
             "enum" : [ "PT", "EN" ],
-            "type" : "string"
+            "type" : [ "string", "null" ]
           },
           "title" : {
-            "type" : "string"
+            "type" : [ "string", "null" ]
           }
         },
         "type" : "object"
@@ -542,7 +594,11 @@
       "StoredProfile" : {
         "properties" : {
           "data" : {
-            "$ref" : "#/components/schemas/Profile"
+            "anyOf" : [ {
+              "$ref" : "#/components/schemas/Profile"
+            }, {
+              "type" : "null"
+            } ]
           },
           "version" : {
             "format" : "int32",
@@ -560,7 +616,7 @@
             "type" : "array"
           },
           "canonical" : {
-            "type" : "string"
+            "type" : [ "string", "null" ]
           }
         },
         "type" : "object"
@@ -569,7 +625,7 @@
         "properties" : {
           "token" : {
             "minLength" : 1,
-            "type" : "string"
+            "type" : [ "string", "null" ]
           }
         },
         "required" : [ "token" ],

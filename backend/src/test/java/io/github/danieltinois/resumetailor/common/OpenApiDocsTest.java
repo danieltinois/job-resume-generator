@@ -90,6 +90,19 @@ class OpenApiDocsTest {
         }
 
         @Test
+        void fieldsTheApiMaySendAsNullAreNullable() throws Exception {
+            JsonNode schemas = spec().at("/components/schemas");
+
+            assertThat(schemas.at("/LocalizedText/properties/en/type").toString()).contains("\"null\"");
+            assertThat(schemas.at("/Experience/properties/endDate/type").toString()).contains("\"null\"");
+            assertThat(schemas.at("/Profile/properties/summary/anyOf").toString())
+                    .contains("#/components/schemas/LocalizedText").contains("\"null\"");
+            // Lists are always present and primitives are never null.
+            assertThat(schemas.at("/Profile/properties/experiences/type").toString()).doesNotContain("null");
+            assertThat(schemas.at("/Me/properties/emailVerified/type").toString()).doesNotContain("null");
+        }
+
+        @Test
         void swaggerUiIsServedWithoutAuthentication() throws Exception {
             mvc.perform(get("/swagger-ui/index.html")).andExpect(status().isOk());
             mvc.perform(get("/swagger-ui.html")).andExpect(status().is3xxRedirection());
