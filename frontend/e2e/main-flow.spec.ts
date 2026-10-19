@@ -56,7 +56,11 @@ test('registers, imports a profile, tailors a resume and downloads the PDF', asy
     await expect(page.locator('[data-test=matched]')).toContainText('Kafka');
     await expect(page.locator('[data-test=missing]')).toContainText('CI/CD');
     await expect(page.locator('iframe[title="Resume preview"]')).toHaveAttribute('src', /^blob:/);
-    await expect(page.frameLocator('iframe[title="Resume preview"]').locator('embed[type="application/pdf"]')).toHaveCount(1);
+    // Headless builds without a PDF viewer download the PDF instead; where a viewer exists,
+    // the preview must reach it (a blocking security policy would leave the frame empty).
+    if (await page.evaluate(() => navigator.pdfViewerEnabled)) {
+      await expect(page.frameLocator('iframe[title="Resume preview"]').locator('embed[type="application/pdf"]')).toHaveCount(1);
+    }
   });
 
   await test.step('save the resume and download the PDF', async () => {

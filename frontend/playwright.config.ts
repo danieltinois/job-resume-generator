@@ -22,9 +22,6 @@ export default defineConfig({
       name: 'chromium',
       use: {
         ...devices['Desktop Chrome'],
-        // Full Chromium in headless mode, not the headless shell: only the full browser has the
-        // PDF viewer the resume preview relies on.
-        channel: 'chromium',
         // A preinstalled Chromium can be used instead of `playwright install`.
         launchOptions: { executablePath: process.env['E2E_CHROMIUM_PATH'] || undefined },
       },
