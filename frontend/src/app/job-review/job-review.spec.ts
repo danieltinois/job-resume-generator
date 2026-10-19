@@ -98,4 +98,36 @@ describe('JobReview', () => {
     backend.expectOne('/api/resumes/r1/pdf').flush(new Blob(['%PDF']));
     await vi.waitFor(() => expect(URL.createObjectURL).toHaveBeenCalled());
   });
+  it('says when the job cannot be loaded instead of loading forever', async () => {
+    TestBed.configureTestingModule({ imports: [JobReview], providers: apiTestProviders });
+    backend = TestBed.inject(HttpTestingController);
+    TestBed.inject(AuthStore).acceptToken('token');
+    const fixture = TestBed.createComponent(JobReview);
+    fixture.componentRef.setInput('id', 'gone');
+    fixture.detectChanges();
+
+    backend.expectOne('/api/jobs/gone').flush(null, { status: 404, statusText: 'Not Found' });
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('[role="alert"]')?.textContent).toContain('Could not load');
+    expect(fixture.nativeElement.textContent).not.toContain('Loading');
+  });
+
+  it('explains why a resume could not be saved', async () => {
+    const fixture = await render();
+
+    fixture.nativeElement.querySelector('button[data-test="save"]').click();
+    backend
+      .expectOne((request) => request.method === 'POST' && request.url === '/api/resumes')
+      .flush(
+        { status: 422, detail: 'The selection refers to an achievement that is no longer in the profile' },
+        { status: 422, statusText: 'Unprocessable Content' },
+      );
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.save [role="alert"]')?.textContent).toContain('no longer in the profile');
+    expect(fixture.nativeElement.querySelector('button[data-test="save"]').disabled).toBe(false);
+  });
 });

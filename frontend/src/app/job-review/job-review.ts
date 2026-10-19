@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, input, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
@@ -19,6 +19,7 @@ import type {
   StoredJob,
   StoredProfile,
 } from '../core/api/types';
+import { toProblem } from '../core/api/problem';
 import { downloadBlob } from '../core/download';
 import { I18n } from '../core/i18n/i18n';
 import { Preview } from './preview';
@@ -47,6 +48,8 @@ export class JobReview implements OnInit {
   protected readonly language = signal<Language>('PT');
   protected readonly saved = signal<{ id: string; warnings: string[] } | null>(null);
   protected readonly saving = signal(false);
+  protected readonly loadFailed = signal(false);
+  protected readonly saveError = signal<string | null>(null);
   private readonly languageChanges = new Subject<Language>();
 
   private readonly request = computed<ResumeRequest | null>(() =>
@@ -85,12 +88,15 @@ export class JobReview implements OnInit {
       job: this.http.get<StoredJob>(`/api/jobs/${this.id()}`),
       profile: this.http.get<StoredProfile>('/api/profile'),
       analysis: this.http.get<Analysis>(`/api/jobs/${this.id()}/analysis`),
-    }).subscribe(({ job, profile, analysis }) => {
-      this.job.set(job);
-      this.profile.set(profile.data ?? null);
-      this.language.set(analysis.language ?? 'PT');
-      this.state.reset(analysis.suggestion);
-      this.analysis.set(analysis);
+    }).subscribe({
+      next: ({ job, profile, analysis }) => {
+        this.job.set(job);
+        this.profile.set(profile.data ?? null);
+        this.language.set(analysis.language ?? 'PT');
+        this.state.reset(analysis.suggestion);
+        this.analysis.set(analysis);
+      },
+      error: () => this.loadFailed.set(true),
     });
   }
 
@@ -131,9 +137,14 @@ export class JobReview implements OnInit {
       return;
     }
     this.saving.set(true);
+    this.saveError.set(null);
     try {
       const saved = await firstValueFrom(this.http.post<{ id: string; warnings: string[] }>('/api/resumes', request));
       this.saved.set(saved);
+    } catch (error) {
+      // A 422 explains itself (e.g. the profile changed after the analysis); anything else is generic.
+      const detail = error instanceof HttpErrorResponse && error.status === 422 ? toProblem(error).detail : null;
+      this.saveError.set(detail || this.i18n.t('error.generic'));
     } finally {
       this.saving.set(false);
     }

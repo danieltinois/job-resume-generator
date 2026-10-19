@@ -63,4 +63,27 @@ describe('Dashboard', () => {
     expect(confirm).toHaveBeenCalledTimes(2);
     expect(fixture.nativeElement.querySelectorAll('[data-test="job"]').length).toBe(1);
   });
+  it('says when the page cannot load and tries again on request', async () => {
+    TestBed.configureTestingModule({ imports: [Dashboard], providers: apiTestProviders });
+    backend = TestBed.inject(HttpTestingController);
+    TestBed.inject(AuthStore).acceptToken('token');
+    const fixture = TestBed.createComponent(Dashboard);
+    fixture.detectChanges();
+    backend.expectOne('/api/jobs').flush(null, { status: 500, statusText: 'Server Error' });
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const element: HTMLElement = fixture.nativeElement;
+    expect(element.querySelector('[role="alert"]')?.textContent).toContain('Could not load');
+    element.querySelector<HTMLButtonElement>('[data-test="retry"]')!.click();
+
+    // The first attempt's other requests were cancelled when it failed.
+    const live = (url: string) => backend.match(url).filter((request) => !request.cancelled);
+    live('/api/jobs')[0].flush(JOBS);
+    live('/api/resumes')[0].flush(RESUMES);
+    live('/api/profile')[0].flush({ version: 1, data: example });
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(element.querySelectorAll('[data-test="job"]').length).toBe(2);
+  });
 });

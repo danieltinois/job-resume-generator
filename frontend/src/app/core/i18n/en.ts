@@ -46,6 +46,8 @@ export const en: Record<TranslationKey, string> = {
   'common.moveDown': 'Move down',
   'common.current': 'Present',
   'common.loading': 'Loading…',
+  'common.loadFailed': 'Could not load this page.',
+  'common.retry': 'Try again',
   'profile.title': 'My profile',
   'profile.mode': 'Editing in',
   'profile.section.personal': 'Personal details',

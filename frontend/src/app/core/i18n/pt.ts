@@ -45,6 +45,8 @@ export const pt = {
   'common.moveDown': 'Mover para baixo',
   'common.current': 'Atual',
   'common.loading': 'Carregando…',
+  'common.loadFailed': 'Não foi possível carregar esta página.',
+  'common.retry': 'Tentar de novo',
   'profile.title': 'Meu perfil',
   'profile.mode': 'Editando em',
   'profile.section.personal': 'Dados pessoais',

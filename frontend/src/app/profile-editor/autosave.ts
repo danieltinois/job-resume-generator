@@ -129,7 +129,14 @@ export class Autosave {
     }
     this.status.set('conflict');
     const choice = await this.handlers.resolveConflict();
-    const latest = await firstValueFrom(this.http.get<StoredProfile>('/api/profile'));
+    let latest: StoredProfile;
+    try {
+      latest = await firstValueFrom(this.http.get<StoredProfile>('/api/profile'));
+    } catch {
+      // The edits stay unsaved; the next change (or leaving the page) tries again and meets the conflict again.
+      this.status.set('error');
+      return;
+    }
     if (choice === 'reload') {
       this.dirty = false;
       this.handlers.reload(latest);
