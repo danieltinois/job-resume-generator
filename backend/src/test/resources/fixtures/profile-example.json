@@ -1,0 +1,126 @@
+{
+  "personal": {
+    "name": "Alex Fictitious",
+    "title": { "pt": "Engenheiro Backend", "en": "Backend Engineer" },
+    "location": "Lisbon, Portugal",
+    "email": "alex.fictitious@example.com",
+    "phone": "+351 900 000 000",
+    "linkedin": "linkedin.com/in/alex-fictitious",
+    "github": "github.com/alex-fictitious"
+  },
+  "summary": {
+    "pt": "Engenheiro backend com 6 anos construindo plataformas de pagamentos e dados em Python. Focado em serviços confiáveis, APIs claras e infraestrutura pragmática.",
+    "en": "Backend engineer with 6 years building payment and data platforms in Python. Focused on reliable services, clear APIs and pragmatic infrastructure."
+  },
+  "skillCategories": [
+    { "id": "cat_0000000a", "name": { "pt": "Linguagens", "en": "Languages" }, "skills": ["Python", "SQL", "Bash"] },
+    { "id": "cat_0000000b", "name": { "pt": "Frameworks", "en": "Frameworks" }, "skills": ["FastAPI", "REST API", "pytest", "Pydantic"] },
+    { "id": "cat_0000000c", "name": { "pt": "Bancos de dados", "en": "Databases" }, "skills": ["PostgreSQL", "Redis"] },
+    { "id": "cat_0000000d", "name": { "pt": "Dados e mensageria", "en": "Data & Messaging" }, "skills": ["Kafka"] },
+    { "id": "cat_0000000e", "name": { "pt": "Cloud e infraestrutura", "en": "Cloud & Infrastructure" }, "skills": ["AWS", "Docker", "Terraform", "Linux"] }
+  ],
+  "experiences": [
+    {
+      "id": "exp_0000000a",
+      "company": "Example Payments",
+      "role": { "pt": "Engenheiro Backend Sênior", "en": "Senior Backend Engineer" },
+      "startDate": "2023-02",
+      "endDate": null,
+      "achievements": [
+        {
+          "id": "ach_0000000a",
+          "text": {
+            "pt": "Reconstruí o pipeline de webhooks de pagamento sobre Kafka, processando 4M de eventos por dia com consumidores idempotentes e replay completo.",
+            "en": "Rebuilt the payment webhook pipeline on Kafka, processing 4M events per day with idempotent consumers and full replay."
+          },
+          "skills": ["Python", "Kafka", "PostgreSQL", "AWS"]
+        },
+        {
+          "id": "ach_0000000b",
+          "text": {
+            "pt": "Projetei e entreguei a API REST pública, reduzindo a latência mediana de 840ms para 120ms e os chamados de suporte em 35%.",
+            "en": "Designed and shipped the public REST API, cutting median latency from 840ms to 120ms and reducing support tickets by 35%."
+          },
+          "skills": ["Python", "FastAPI", "REST API", "PostgreSQL"]
+        },
+        {
+          "id": "ach_0000000c",
+          "text": {
+            "pt": "Migrei 12 serviços de PostgreSQL autogerenciado para Amazon RDS com failover automático, eliminando um alerta recorrente de plantão.",
+            "en": "Migrated 12 services from self-managed PostgreSQL to Amazon RDS with automated failover, removing a recurring on-call page."
+          },
+          "skills": ["PostgreSQL", "AWS", "Terraform"]
+        }
+      ]
+    },
+    {
+      "id": "exp_0000000b",
+      "company": "Fictional Data Co",
+      "role": { "pt": "Engenheiro Backend", "en": "Backend Engineer" },
+      "startDate": "2021-01",
+      "endDate": "2023-01",
+      "achievements": [
+        {
+          "id": "ach_0000000d",
+          "text": {
+            "pt": "Construí um pipeline de ingestão em lote movendo 2TB/dia de feeds SFTP de parceiros para um data warehouse PostgreSQL normalizado.",
+            "en": "Built a batch ingestion pipeline moving 2TB/day from partner SFTP feeds into a normalized PostgreSQL warehouse."
+          },
+          "skills": ["Python", "PostgreSQL", "Linux"]
+        },
+        {
+          "id": "ach_0000000e",
+          "text": {
+            "pt": "Substituí um agendador cron frágil por workers em contêineres, reduzindo em 60% as novas tentativas de jobs com falha.",
+            "en": "Replaced a fragile cron scheduler with containerised workers, cutting failed job retries by 60%."
+          },
+          "skills": ["Python", "Docker", "Linux", "Git"]
+        },
+        {
+          "id": "ach_0000000f",
+          "text": {
+            "pt": "Adicionei controle de acesso por papéis ao dashboard interno, auditando cada consulta contra o novo modelo de permissões.",
+            "en": "Added role-based access to the internal dashboard, audited every query against the new permissions model."
+          },
+          "skills": ["Python", "REST API"]
+        }
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "id": "prj_0000000a",
+      "name": "resumetailor",
+      "description": {
+        "pt": "Ferramenta de linha de comando que adapta um único perfil YAML a um currículo específico para a vaga, gerando o PDF com Typst.",
+        "en": "Local command line tool that tailors a single YAML profile into a job-specific resume, rendering the PDF with Typst."
+      },
+      "skills": ["Python", "Typst", "PyYAML"],
+      "url": "github.com/example/resumetailor"
+    },
+    {
+      "id": "prj_0000000b",
+      "name": "tinystatemachine",
+      "description": {
+        "pt": "Pequena máquina de estados sem dependências para Python, usada num fluxo de retentativas de pagamento.",
+        "en": "Small library-free state machine for Python, used in a payments retry flow."
+      },
+      "skills": ["Python"],
+      "url": null
+    }
+  ],
+  "education": [
+    {
+      "id": "edu_0000000a",
+      "institution": "Universidade Exemplo",
+      "degree": { "pt": "Bacharelado em Ciência da Computação", "en": "BSc Computer Science" },
+      "startDate": "2015-09",
+      "endDate": "2019-07"
+    }
+  ],
+  "languages": [
+    { "name": { "pt": "Português", "en": "Portuguese" }, "level": { "pt": "Nativo", "en": "Native" } },
+    { "name": { "pt": "Inglês", "en": "English" }, "level": { "pt": "Profissional", "en": "Professional" } },
+    { "name": { "pt": "Espanhol", "en": "Spanish" }, "level": { "pt": "Conversação", "en": "Conversational" } }
+  ]
+}

@@ -1,0 +1,150 @@
+@if (analysis(); as analysis) {
+  <div class="review">
+    <section class="controls">
+      <header>
+        <a routerLink="/">← {{ i18n.t('nav.jobs') }}</a>
+        <h1>{{ job()?.title || i18n.t('profile.untitled') }}</h1>
+        @if (job()?.company) {
+          <p class="meta">{{ job()?.company }}</p>
+        }
+      </header>
+
+      <div class="row">
+        <span id="review-language">{{ i18n.t('review.language') }}</span>
+        <mat-button-toggle-group aria-labelledby="review-language" [value]="language()" (change)="setLanguage($event.value)">
+          <mat-button-toggle value="PT">PT</mat-button-toggle>
+          <mat-button-toggle value="EN">EN</mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+
+      <h2>{{ i18n.t('review.matched') }}</h2>
+      <mat-chip-set data-test="matched">
+        @for (skill of analysis.matchedSkills; track skill) {
+          <mat-chip class="matched">{{ skill }}</mat-chip>
+        } @empty {
+          <p class="meta">{{ i18n.t('review.noneMatched') }}</p>
+        }
+      </mat-chip-set>
+      @if (analysis.missingSkills?.length) {
+        <h2>{{ i18n.t('review.missing') }}</h2>
+        <p class="meta">{{ i18n.t('review.missingHelp') }}</p>
+        <mat-chip-set data-test="missing">
+          @for (skill of analysis.missingSkills; track skill) {
+            <mat-chip disabled>{{ skill }}</mat-chip>
+          }
+        </mat-chip-set>
+      }
+
+      @if (analysis.warnings?.length) {
+        <div class="warnings" role="note">
+          <strong>{{ i18n.t('review.warnings') }}</strong>
+          <ul>
+            @for (warning of analysis.warnings; track warning) {
+              <li>{{ warning }}</li>
+            }
+          </ul>
+        </div>
+      }
+
+      <div class="row">
+        <h2>{{ i18n.t('profile.section.experiences') }}</h2>
+        <button mat-button type="button" (click)="state.restore()">{{ i18n.t('review.restore') }}</button>
+      </div>
+      @for (experience of experiences(); track experience.id; let e = $index) {
+        <div class="experience" [class.hidden]="!state.isShown(experience.id ?? '')">
+          <div class="row">
+            <mat-checkbox [checked]="state.isShown(experience.id ?? '')" (change)="state.toggleExperience(experience.id ?? '')">
+              <strong>{{ experience.company }}</strong> · {{ text(experience.role) }}
+            </mat-checkbox>
+            @if (state.isShown(experience.id ?? '')) {
+              <span class="move">
+                <button mat-icon-button type="button" [attr.aria-label]="i18n.t('common.moveUp')" (click)="state.moveExperience(e, e - 1)">↑</button>
+                <button mat-icon-button type="button" [attr.aria-label]="i18n.t('common.moveDown')" (click)="state.moveExperience(e, e + 1)">↓</button>
+              </span>
+            }
+          </div>
+          @for (achievement of achievementsOf(experience); track achievement.id) {
+            <div class="achievement">
+              <label>
+                <input
+                  type="checkbox"
+                  [attr.data-achievement]="achievement.id"
+                  [checked]="isChosen(experience, achievement)"
+                  (change)="state.toggleAchievement(experience.id ?? '', achievement.id ?? '')"
+                />
+                <span>{{ text(achievement.text) }}</span>
+              </label>
+              <span class="score"><span class="visually-hidden">{{ i18n.t('review.score') }}: </span>{{ score(achievement) }}</span>
+              @if (isChosen(experience, achievement)) {
+                <span class="move">
+                  <button mat-icon-button type="button" [attr.aria-label]="i18n.t('common.moveUp')"
+                    (click)="state.moveAchievement(experience.id ?? '', positionOf(experience, achievement), positionOf(experience, achievement) - 1)">↑</button>
+                  <button mat-icon-button type="button" [attr.aria-label]="i18n.t('common.moveDown')"
+                    (click)="state.moveAchievement(experience.id ?? '', positionOf(experience, achievement), positionOf(experience, achievement) + 1)">↓</button>
+                </span>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      @if (profile()?.projects?.length) {
+        <h2>{{ i18n.t('profile.section.projects') }}</h2>
+        @for (project of profile()?.projects ?? []; track project.id) {
+          <mat-checkbox [checked]="state.selection().projects.includes(project.id ?? '')" (change)="state.toggleProject(project.id ?? '')">
+            {{ project.name }}
+          </mat-checkbox>
+        }
+      }
+
+      @if (profile()?.skillCategories?.length) {
+        <h2>{{ i18n.t('profile.section.skillCategories') }}</h2>
+        @for (category of profile()?.skillCategories ?? []; track category.id) {
+          <p class="category">{{ text(category.name) }}</p>
+          <div class="skills">
+            @for (skill of state.selection().skillOrder[category.id ?? ''] ?? category.skills ?? []; track skill; let s = $index) {
+              <span class="skill">
+                <button mat-icon-button type="button" [attr.aria-label]="i18n.t('common.moveUp') + ': ' + skill" (click)="state.moveSkill(category.id ?? '', s, s - 1)">‹</button>
+                {{ skill }}
+                <button mat-icon-button type="button" [attr.aria-label]="i18n.t('common.moveDown') + ': ' + skill" (click)="state.moveSkill(category.id ?? '', s, s + 1)">›</button>
+              </span>
+            }
+          </div>
+        }
+      }
+
+      <div class="save">
+        <button mat-flat-button type="button" data-test="save" [disabled]="saving()" (click)="save()">
+          {{ i18n.t('review.save') }}
+        </button>
+        @if (saveError(); as message) {
+          <p class="notice error" role="alert">{{ message }}</p>
+        }
+        @if (saved()) {
+          <span role="status">{{ i18n.t('review.saved') }}</span>
+          <button mat-stroked-button type="button" data-test="download" (click)="download()">
+            {{ i18n.t('dashboard.download') }}
+          </button>
+        }
+      </div>
+    </section>
+
+    <section class="preview" [attr.aria-busy]="preview.loading()">
+      @if (preview.failed()) {
+        <p class="notice error" role="alert">{{ i18n.t('review.previewFailed') }}</p>
+      }
+      @if (previewUrl(); as url) {
+        <iframe [src]="url" [title]="i18n.t('review.preview')"></iframe>
+      } @else {
+        <p class="meta" role="status">{{ i18n.t('review.previewLoading') }}</p>
+      }
+    </section>
+  </div>
+} @else if (loadFailed()) {
+  <div class="loading">
+    <p class="notice error" role="alert">{{ i18n.t('common.loadFailed') }}</p>
+    <a routerLink="/">← {{ i18n.t('nav.jobs') }}</a>
+  </div>
+} @else {
+  <p class="loading" role="status">{{ i18n.t('common.loading') }}</p>
+}

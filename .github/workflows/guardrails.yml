@@ -1,0 +1,77 @@
+# Server-side copy of the .githooks checks, so a bypassed hook still fails.
+# See AGENTS.md, section 10.
+name: guardrails
+
+on:
+  push:
+  pull_request:
+    # `edited` re-checks the PR text after a title or body change.
+    types: [opened, synchronize, reopened, edited]
+
+jobs:
+  guardrails:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Branch name follows git flow
+        env:
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+          REF_TYPE: ${{ github.ref_type }}
+        run: |
+          [ "$REF_TYPE" = "tag" ] && exit 0
+          if ! echo "$BRANCH" | grep -Eq '^(main|develop|(feature|bugfix|release|hotfix|support)/[a-z0-9][a-z0-9._-]*)$'; then
+            echo "::error::'$BRANCH' is not a git flow branch name (AGENTS.md, section 3)."
+            exit 1
+          fi
+
+      - name: Pull request targets the right base
+        if: github.event_name == 'pull_request'
+        env:
+          HEAD: ${{ github.head_ref }}
+          BASE: ${{ github.base_ref }}
+        run: |
+          case "$HEAD" in
+            feature/*|bugfix/*) allowed="develop" ;;
+            release/*|hotfix/*) allowed="main develop" ;;
+            *) allowed="" ;;
+          esac
+          for base in $allowed; do [ "$BASE" = "$base" ] && exit 0; done
+          echo "::error::'$HEAD' must not target '$BASE' (AGENTS.md, section 3)."
+          exit 1
+
+      - name: Commits carry no AI attribution
+        env:
+          BEFORE: ${{ github.event.before }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [ -n "$PR_BASE" ]; then
+            range="$PR_BASE..$PR_HEAD"
+          elif [ -n "$BEFORE" ] && [ "$BEFORE" != "0000000000000000000000000000000000000000" ]; then
+            range="$BEFORE..$GITHUB_SHA"
+          else
+            range="origin/main..$GITHUB_SHA"
+          fi
+          status=0
+          for sha in $(git rev-list "$range"); do
+            git log -1 --format='%B' "$sha" > /tmp/msg
+            git log -1 --format='Author: %an <%ae>' "$sha" >> /tmp/msg
+            sh .githooks/check-commit-message.sh /tmp/msg "commit $sha" || status=1
+            if git log -1 --format='%an <%ae>' "$sha" | grep -Eiq 'noreply@anthropic\.com|^claude |\[bot\]'; then
+              echo "::error::commit $sha is authored by a bot identity (AGENTS.md, rule 1.2)."
+              status=1
+            fi
+          done
+          exit $status
+
+      - name: Pull request text carries no AI attribution
+        if: github.event_name == 'pull_request'
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          printf '%s\n%s\n' "$TITLE" "$BODY" > /tmp/pr
+          sh .githooks/check-commit-message.sh /tmp/pr "pull request text"

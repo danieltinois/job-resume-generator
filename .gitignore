@@ -1,14 +1,16 @@
-__pycache__/
-*.py[cod]
-*.egg-info/
-.pytest_cache/
-.venv/
-venv/
-
-# Generated per job. Kept out of the repo on purpose: once profile.yaml holds
-# your real data, these files carry your name, email and phone number.
+# Resumes generated or downloaded locally. Kept out of the repo on purpose:
+# they carry a real name, email and phone number.
 output/
 
-# Your actual career data. Never committed. profile.example.yaml is the
-# committed, fictional starting point.
+# A real profile to import. Never committed. profile.example.yaml is the
+# committed, fictional one.
 profile/profile.yaml
+
+# Maven build output
+backend/target/
+
+# Execution scratch of the superpowers workflow
+.superpowers/
+
+# Local secrets; .env.example is the committed template.
+.env

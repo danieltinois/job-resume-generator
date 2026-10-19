@@ -1,0 +1,31 @@
+<mat-toolbar class="app-toolbar">
+  <a class="brand" routerLink="/">Resume Tailor</a>
+  @if (auth.isSignedIn()) {
+    <nav class="nav">
+      <a mat-button routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        {{ i18n.t('nav.jobs') }}
+      </a>
+      <a mat-button routerLink="/profile" routerLinkActive="active">{{ i18n.t('nav.profile') }}</a>
+    </nav>
+  }
+  <span class="spacer"></span>
+  <mat-button-toggle-group
+    class="language"
+    hideSingleSelectionIndicator
+    [value]="i18n.lang()"
+    (change)="i18n.setLang($event.value)"
+    [attr.aria-label]="i18n.t('nav.language')"
+  >
+    <mat-button-toggle value="pt">PT</mat-button-toggle>
+    <mat-button-toggle value="en">EN</mat-button-toggle>
+  </mat-button-toggle-group>
+  @if (auth.user(); as user) {
+    <span class="user">{{ user.name }}</span>
+  }
+  @if (auth.isSignedIn()) {
+    <button mat-button type="button" (click)="logout()">{{ i18n.t('nav.logout') }}</button>
+  }
+</mat-toolbar>
+<main class="app-main">
+  <router-outlet />
+</main>

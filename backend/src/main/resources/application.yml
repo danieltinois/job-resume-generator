@@ -1,0 +1,52 @@
+server:
+  # Behind nginx: take the client address from X-Forwarded-For, but only from a trusted proxy.
+  forward-headers-strategy: native
+  tomcat:
+    remoteip:
+      # Default: private and loopback ranges, where the compose network's nginx lives.
+      internal-proxies: ${TRUSTED_PROXIES:10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2[0-9]|3[0-1])\.\d{1,3}\.\d{1,3}|127\.\d{1,3}\.\d{1,3}\.\d{1,3}|0:0:0:0:0:0:0:1}
+
+spring:
+  application:
+    name: resume-tailor
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/resume}
+    username: ${DATABASE_USERNAME:resume}
+    password: ${DATABASE_PASSWORD:resume}
+  servlet:
+    multipart:
+      # Legacy profile.yaml imports are a few KB.
+      max-file-size: 256KB
+      max-request-size: 300KB
+  mail:
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:1025}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+
+springdoc:
+  api-docs:
+    enabled: ${app.api-docs-enabled}
+  swagger-ui:
+    enabled: ${app.api-docs-enabled}
+    # Swagger UI shares the app's origin; a persisted token would land in localStorage.
+    persist-authorization: false
+  paths-to-match: /api/**
+
+resume:
+  typst:
+    binary: typst
+    timeout: 10s
+    # 0 = one render per CPU
+    max-concurrent: 0
+
+app:
+  # Swagger UI and /v3/api-docs. Turn off in production: API_DOCS_ENABLED=false
+  api-docs-enabled: ${API_DOCS_ENABLED:true}
+  jwt-secret: ${JWT_SECRET:}
+  base-url: ${APP_BASE_URL:http://localhost:4200}
+  cookie-secure: ${COOKIE_SECURE:true}
+  mail-from: ${MAIL_FROM:no-reply@localhost}
+  google:
+    client-id: ${GOOGLE_CLIENT_ID:}
+    client-secret: ${GOOGLE_CLIENT_SECRET:}

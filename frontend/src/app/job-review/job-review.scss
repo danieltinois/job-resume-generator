@@ -1,0 +1,132 @@
+.review {
+  display: grid;
+  grid-template-columns: minmax(320px, 2fr) 3fr;
+  gap: 16px;
+  padding: 16px;
+  height: calc(100vh - 64px);
+  box-sizing: border-box;
+}
+
+@media (max-width: 960px) {
+  .review {
+    grid-template-columns: minmax(0, 1fr);
+    height: auto;
+  }
+
+  .preview iframe {
+    height: 80vh;
+  }
+}
+
+.controls {
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.preview {
+  display: flex;
+  flex-direction: column;
+}
+
+.preview iframe {
+  flex: 1;
+  width: 100%;
+  min-height: 480px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 8px;
+}
+
+h1 {
+  margin: 8px 0 0;
+}
+
+h2 {
+  font-size: 1.05em;
+  margin: 16px 0 8px;
+}
+
+.meta {
+  color: var(--mat-sys-on-surface-variant);
+  margin: 4px 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.experience {
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 12px;
+  padding: 8px;
+  margin-bottom: 8px;
+}
+
+.experience.hidden {
+  opacity: 0.6;
+}
+
+.achievement {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 4px 0 4px 24px;
+}
+
+.achievement label {
+  flex: 1;
+  display: flex;
+  gap: 8px;
+}
+
+.score {
+  min-width: 24px;
+  text-align: center;
+  border-radius: 12px;
+  background: var(--mat-sys-tertiary-container);
+  color: var(--mat-sys-on-tertiary-container);
+}
+
+.move {
+  display: inline-flex;
+}
+
+.warnings {
+  margin: 12px 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--mat-sys-secondary-container);
+}
+
+.category {
+  margin: 8px 0 4px;
+  font-weight: 500;
+}
+
+.skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.skill {
+  display: inline-flex;
+  align-items: center;
+  padding-right: 8px;
+  border-radius: 8px;
+  background: var(--mat-sys-surface-container-high);
+}
+
+.save {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0;
+}
+
+.loading {
+  text-align: center;
+  margin-top: 48px;
+}

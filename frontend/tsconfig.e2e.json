@@ -1,0 +1,10 @@
+/* Type-checks the Playwright tests and config (Playwright itself only transpiles them). */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "module": "preserve",
+    "types": ["node"]
+  },
+  "include": ["e2e/**/*.ts", "playwright.config.ts"]
+}
