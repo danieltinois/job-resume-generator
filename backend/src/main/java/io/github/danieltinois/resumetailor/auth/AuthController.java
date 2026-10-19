@@ -1,5 +1,7 @@
 package io.github.danieltinois.resumetailor.auth;
 
+import java.net.URI;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -26,6 +28,13 @@ import jakarta.validation.constraints.Size;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+
+    /**
+     * Problem type of a refresh that lost a race with another tab: the cookie
+     * it sent was just rotated, so the client should retry with the new one.
+     */
+    public static final String CONCURRENT_REFRESH_TYPE = "urn:resume-tailor:problem:concurrent-refresh";
+
 
     /** BCrypt's input limit. */
     static final int PASSWORD_MAX_BYTES = 72;
@@ -114,10 +123,13 @@ public class AuthController {
             // A dead refresh cookie is cleared, so the browser stops sending it. After a race between
             // tabs it is left alone: the winning request has just set its replacement.
             var response = ResponseEntity.status(e.status());
-            if (!e.keepsRefreshCookie()) {
+            ProblemDetail problem = ProblemDetail.forStatusAndDetail(e.status(), e.getMessage());
+            if (e.keepsRefreshCookie()) {
+                problem.setType(URI.create(CONCURRENT_REFRESH_TYPE));
+            } else {
                 response.header(HttpHeaders.SET_COOKIE, cookies.clear().toString());
             }
-            return response.body(ProblemDetail.forStatusAndDetail(e.status(), e.getMessage()));
+            return response.body(problem);
         }
     }
 

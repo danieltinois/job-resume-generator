@@ -3,7 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { authInterceptor } from './auth.interceptor';
-import { AuthStore } from './auth-store';
+import { AuthStore, CONCURRENT_REFRESH_TYPE } from './auth-store';
 import { LOCK_MANAGER } from './refresh-coordinator';
 
 describe('AuthStore', () => {
@@ -86,5 +86,42 @@ describe('AuthStore', () => {
 
     await expect(restored).resolves.toBeUndefined();
     expect(store.isSignedIn()).toBe(false);
+  });
+
+  describe('when another tab refreshed at the same moment', () => {
+    const lostRace = () =>
+      backend
+        .expectOne('/api/auth/refresh')
+        .flush(
+          { status: 401, type: CONCURRENT_REFRESH_TYPE, detail: 'Session refreshed by another tab, retry' },
+          { status: 401, statusText: 'Unauthorized' },
+        );
+
+    beforeEach(() => vi.useFakeTimers());
+    afterEach(() => vi.useRealTimers());
+
+    it('retries once with the cookie the other tab received', async () => {
+      store.acceptToken('old');
+      const refreshed = store.refresh();
+      lostRace();
+
+      await vi.advanceTimersByTimeAsync(1000);
+      backend.expectOne('/api/auth/refresh').flush({ accessToken: 'fresh' });
+
+      await expect(refreshed).resolves.toBe('fresh');
+      expect(store.accessToken()).toBe('fresh');
+    });
+
+    it('signs out when the retry loses too', async () => {
+      store.acceptToken('old');
+      const refreshed = store.refresh();
+      lostRace();
+
+      await vi.advanceTimersByTimeAsync(1000);
+      lostRace();
+
+      await expect(refreshed).resolves.toBeNull();
+      expect(store.isSignedIn()).toBe(false);
+    });
   });
 });
