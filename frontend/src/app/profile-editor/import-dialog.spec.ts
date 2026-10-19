@@ -34,4 +34,18 @@ describe('ImportDialog', () => {
     fixture.nativeElement.querySelector('button[data-test="replace"]').click();
     expect(close).toHaveBeenCalledWith(example as Profile);
   });
+  it('names its file picker and language choice', () => {
+    TestBed.configureTestingModule({
+      imports: [ImportDialog],
+      providers: [...apiTestProviders, { provide: MatDialogRef, useValue: { close: vi.fn() } }],
+    });
+    const fixture = TestBed.createComponent(ImportDialog);
+    fixture.detectChanges();
+    const element: HTMLElement = fixture.nativeElement;
+
+    const file = element.querySelector<HTMLInputElement>('input[type="file"]')!;
+    expect(file.labels?.[0]?.textContent).toContain('profile.yaml');
+    const group = element.querySelector('mat-button-toggle-group')!;
+    expect(document.getElementById(group.getAttribute('aria-labelledby') ?? '')?.textContent).toContain('language');
+  });
 });

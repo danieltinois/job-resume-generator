@@ -29,6 +29,8 @@ test('registers, imports a profile, tailors a resume and downloads the PDF', asy
     await page.getByLabel('Password').fill(password);
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'My jobs' })).toBeVisible();
+    await expect(page).toHaveTitle('Resume Tailor');
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   });
 
   await test.step('import the example profile', async () => {

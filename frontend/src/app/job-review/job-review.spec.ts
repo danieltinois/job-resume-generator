@@ -130,4 +130,15 @@ describe('JobReview', () => {
     expect(fixture.nativeElement.querySelector('.save [role="alert"]')?.textContent).toContain('no longer in the profile');
     expect(fixture.nativeElement.querySelector('button[data-test="save"]').disabled).toBe(false);
   });
+  it('names its controls for assistive technology', async () => {
+    const fixture = await render();
+    const element: HTMLElement = fixture.nativeElement;
+
+    const group = element.querySelector('mat-button-toggle-group')!;
+    expect(document.getElementById(group.getAttribute('aria-labelledby') ?? '')?.textContent).toContain('Resume language');
+    expect(element.querySelector('.score')?.textContent).toContain('Relevance score');
+    const skill = element.querySelector('.skill')!;
+    const names = [...skill.querySelectorAll('button')].map((button) => button.getAttribute('aria-label'));
+    expect(names).toEqual([expect.stringMatching(/^Move up: /), expect.stringMatching(/^Move down: /)]);
+  });
 });

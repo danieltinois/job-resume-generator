@@ -136,4 +136,13 @@ describe('ProfileEditor', () => {
     });
     await importing;
   });
+  it('says what the missing-English badge counts, not only in a tooltip', async () => {
+    const profile = structuredClone(example) as Profile;
+    profile.summary!.en = null;
+
+    const fixture = await render(profile);
+
+    const link = (fixture.nativeElement as HTMLElement).querySelector('[data-section="summary"]')!;
+    expect(link.textContent).toContain('1 missing English');
+  });
 });

@@ -10,8 +10,8 @@
       </header>
 
       <div class="row">
-        <span>{{ i18n.t('review.language') }}</span>
-        <mat-button-toggle-group [value]="language()" (change)="setLanguage($event.value)">
+        <span id="review-language">{{ i18n.t('review.language') }}</span>
+        <mat-button-toggle-group aria-labelledby="review-language" [value]="language()" (change)="setLanguage($event.value)">
           <mat-button-toggle value="PT">PT</mat-button-toggle>
           <mat-button-toggle value="EN">EN</mat-button-toggle>
         </mat-button-toggle-group>
@@ -74,7 +74,7 @@
                 />
                 <span>{{ text(achievement.text) }}</span>
               </label>
-              <span class="score" [attr.title]="i18n.t('review.score')">{{ score(achievement) }}</span>
+              <span class="score"><span class="visually-hidden">{{ i18n.t('review.score') }}: </span>{{ score(achievement) }}</span>
               @if (isChosen(experience, achievement)) {
                 <span class="move">
                   <button mat-icon-button type="button" [attr.aria-label]="i18n.t('common.moveUp')"
@@ -104,8 +104,9 @@
           <div class="skills">
             @for (skill of state.selection().skillOrder[category.id ?? ''] ?? category.skills ?? []; track skill; let s = $index) {
               <span class="skill">
-                <button mat-icon-button type="button" [attr.aria-label]="i18n.t('common.moveUp')" (click)="state.moveSkill(category.id ?? '', s, s - 1)">‹</button>
+                <button mat-icon-button type="button" [attr.aria-label]="i18n.t('common.moveUp') + ': ' + skill" (click)="state.moveSkill(category.id ?? '', s, s - 1)">‹</button>
                 {{ skill }}
+                <button mat-icon-button type="button" [attr.aria-label]="i18n.t('common.moveDown') + ': ' + skill" (click)="state.moveSkill(category.id ?? '', s, s + 1)">›</button>
               </span>
             }
           </div>

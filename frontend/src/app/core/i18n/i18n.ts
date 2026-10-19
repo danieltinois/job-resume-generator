@@ -1,4 +1,4 @@
-import { Injectable, InjectionToken, inject, signal } from '@angular/core';
+import { DOCUMENT, Injectable, InjectionToken, effect, inject, signal } from '@angular/core';
 import { en } from './en';
 import { pt, type TranslationKey } from './pt';
 
@@ -20,6 +20,11 @@ const DICTIONARIES: Record<UiLanguage, Record<TranslationKey, string>> = { pt, e
 @Injectable({ providedIn: 'root' })
 export class I18n {
   readonly lang = signal<UiLanguage>(this.initial());
+
+  constructor() {
+    const document = inject(DOCUMENT);
+    effect(() => (document.documentElement.lang = this.lang() === 'pt' ? 'pt-BR' : 'en'));
+  }
 
   setLang(lang: UiLanguage): void {
     this.lang.set(lang);

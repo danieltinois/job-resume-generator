@@ -103,6 +103,7 @@ export const pt = {
   'profile.import.open': 'Importar profile.yaml',
   'profile.import.title': 'Importar profile.yaml',
   'profile.import.help': 'Escolha o profile.yaml da ferramenta de linha de comando.',
+  'profile.import.file': 'Arquivo profile.yaml',
   'profile.import.language': 'Em que idioma estão os textos do arquivo?',
   'profile.import.convert': 'Converter',
   'profile.import.replace': 'Substituir meu perfil',

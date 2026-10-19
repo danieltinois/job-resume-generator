@@ -37,4 +37,15 @@ describe('I18n', () => {
     i18n.setLang('pt');
     expect(i18n.t('auth.welcome', { name: 'Alex' })).toBe('Olá, Alex');
   });
+  it('keeps the document language in step, for screen readers and hyphenation', () => {
+    TestBed.configureTestingModule({ providers: [{ provide: BROWSER_LANGUAGE, useValue: 'pt-BR' }] });
+    const i18n = TestBed.inject(I18n);
+    TestBed.tick();
+    expect(document.documentElement.lang).toBe('pt-BR');
+
+    i18n.setLang('en');
+    TestBed.tick();
+
+    expect(document.documentElement.lang).toBe('en');
+  });
 });

@@ -104,6 +104,7 @@ export const en: Record<TranslationKey, string> = {
   'profile.import.open': 'Import profile.yaml',
   'profile.import.title': 'Import profile.yaml',
   'profile.import.help': 'Choose the profile.yaml of the command line tool.',
+  'profile.import.file': 'profile.yaml file',
   'profile.import.language': 'Which language is the text in the file written in?',
   'profile.import.convert': 'Convert',
   'profile.import.replace': 'Replace my profile',

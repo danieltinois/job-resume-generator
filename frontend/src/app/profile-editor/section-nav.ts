@@ -20,9 +20,8 @@ export interface SectionStatus {
           (click)="jump($event, section.key)">
           <span>{{ section.label }}</span>
           @if (section.missingEnglish > 0) {
-            <span class="badge" [attr.title]="i18n.t('profile.missingEn', { count: section.missingEnglish })">
-              {{ section.missingEnglish }}
-            </span>
+            <span class="badge" aria-hidden="true">{{ section.missingEnglish }}</span>
+            <span class="visually-hidden">{{ i18n.t('profile.missingEn', { count: section.missingEnglish }) }}</span>
           }
         </a>
       }
