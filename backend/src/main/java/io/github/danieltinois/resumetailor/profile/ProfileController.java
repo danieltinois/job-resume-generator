@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -28,6 +31,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 
+@Tag(name = "Profile", description = "The bilingual profile every resume is built from")
 @RestController
 @RequestMapping("/api/profile")
 public class ProfileController {
@@ -54,12 +58,14 @@ public class ProfileController {
         this.currentUser = currentUser;
     }
 
+    @Operation(summary = "Load the profile and its version")
     @GetMapping
     public StoredProfile get(Authentication authentication) {
         User user = currentUser.require(authentication);
         return profiles.find(user.id()).orElseGet(() -> new StoredProfile(0, skeleton(user)));
     }
 
+    @Operation(summary = "Save the whole profile; 409 if the version changed")
     @PutMapping
     public Saved save(@Valid @RequestBody SaveRequest request, Authentication authentication) {
         UUID userId = currentUser.require(authentication).id();
@@ -71,6 +77,7 @@ public class ProfileController {
     }
 
     /** Converts a legacy profile.yaml for the user to review; nothing is saved. */
+    @Operation(summary = "Convert a legacy profile.yaml for review (not saved)")
     @PostMapping("/import")
     public Profile importLegacy(@RequestPart("file") MultipartFile file, @RequestParam Language language,
             Authentication authentication) throws IOException {
@@ -81,6 +88,7 @@ public class ProfileController {
         return converter.convert(new String(file.getBytes(), StandardCharsets.UTF_8), language);
     }
 
+    @Operation(summary = "Download the profile as JSON")
     @GetMapping("/export")
     public ResponseEntity<Profile> export(Authentication authentication) {
         StoredProfile profile = get(authentication);

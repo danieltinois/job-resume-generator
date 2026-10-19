@@ -18,6 +18,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.server.ResponseStatusException;
 
 import io.github.danieltinois.resumetailor.common.CurrentUser;
@@ -30,6 +33,7 @@ import io.github.danieltinois.resumetailor.profile.StoredProfile;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
+@Tag(name = "Resumes", description = "Preview, save and download tailored resumes")
 @RestController
 @RequestMapping("/api/resumes")
 public class ResumeController {
@@ -58,11 +62,13 @@ public class ResumeController {
     }
 
     /** Renders without saving: the review screen calls this on every change. */
+    @Operation(summary = "Render a selection to PDF without saving")
     @PostMapping(value = "/preview", produces = MediaType.APPLICATION_PDF_VALUE)
     public byte[] preview(@Valid @RequestBody ResumeRequest request, Authentication authentication) {
         return renderer.render(assemble(currentUser.require(authentication).id(), request).document());
     }
 
+    @Operation(summary = "Save a resume, freezing what was rendered")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Created save(@Valid @RequestBody ResumeRequest request, Authentication authentication) {
@@ -72,6 +78,7 @@ public class ResumeController {
         return new Created(id, resume.warnings());
     }
 
+    @Operation(summary = "List saved resumes, optionally for one job")
     @GetMapping
     public List<ResumeRepository.Summary> list(@RequestParam(required = false) UUID jobId,
             Authentication authentication) {
@@ -79,6 +86,7 @@ public class ResumeController {
     }
 
     /** Renders the frozen snapshot, so the PDF matches what was saved even after profile edits. */
+    @Operation(summary = "Download a saved resume as rendered when saved")
     @GetMapping("/{id}/pdf")
     public ResponseEntity<byte[]> pdf(@PathVariable UUID id, Authentication authentication) {
         ResumeRepository.Saved saved = resumes.find(currentUser.require(authentication).id(), id)
@@ -90,6 +98,7 @@ public class ResumeController {
                 .body(renderer.render(saved.snapshot()));
     }
 
+    @Operation(summary = "Delete a saved resume")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable UUID id, Authentication authentication) {
