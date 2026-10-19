@@ -105,6 +105,23 @@ export const pt = {
   'profile.import.preview': 'Encontramos {experiences} experiências e {achievements} conquistas.',
   'profile.import.warning': 'Substituir apaga o perfil atual desta tela; o resultado é salvo em seguida.',
   'profile.export': 'Exportar JSON',
+  'nav.jobs': 'Vagas',
+  'nav.profile': 'Perfil',
+  'nav.logout': 'Sair',
+  'nav.language': 'Idioma da interface',
+  'dashboard.title': 'Minhas vagas',
+  'dashboard.newJob': 'Nova vaga',
+  'dashboard.review': 'Revisar e gerar',
+  'dashboard.resume': 'Currículo',
+  'dashboard.download': 'Baixar PDF',
+  'dashboard.emptyProfile': 'Seu perfil ainda está vazio. Preencha ou importe seu profile.yaml antes de gerar currículos.',
+  'dashboard.fillProfile': 'Preencher perfil',
+  'dashboard.noJobs': 'Nenhuma vaga ainda. Cole a primeira em "Nova vaga".',
+  'dashboard.confirmDelete': 'Remover a vaga "{title}" e os currículos gerados para ela?',
+  'newJob.title': 'Nova vaga',
+  'newJob.help': 'Cole a descrição completa da vaga, em português ou inglês.',
+  'newJob.description': 'Descrição da vaga',
+  'newJob.submit': 'Analisar vaga',
 } as const;
 
 export type TranslationKey = keyof typeof pt;

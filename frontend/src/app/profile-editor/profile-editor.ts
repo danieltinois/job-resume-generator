@@ -9,6 +9,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { catchError, firstValueFrom, of } from 'rxjs';
 import type { Profile, StoredProfile, TechTerm } from '../core/api/types';
+import { downloadBlob } from '../core/download';
 import { fieldError } from '../core/forms/field-error';
 import { I18n } from '../core/i18n/i18n';
 import { Autosave, type ConflictChoice, type SaveStatus } from './autosave';
@@ -145,13 +146,7 @@ export class ProfileEditor {
   }
 
   protected async exportProfile(): Promise<void> {
-    const file = await firstValueFrom(this.http.get('/api/profile/export', { responseType: 'blob' }));
-    const url = URL.createObjectURL(file);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'profile.json';
-    link.click();
-    URL.revokeObjectURL(url);
+    downloadBlob(await firstValueFrom(this.http.get('/api/profile/export', { responseType: 'blob' })), 'profile.json');
   }
 
   private async askConflict(): Promise<ConflictChoice> {
