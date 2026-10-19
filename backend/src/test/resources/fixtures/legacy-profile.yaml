@@ -1,0 +1,102 @@
+# =============================================================================
+# FICTIONAL SAMPLE PROFILE — every person, company and number below is invented.
+# Replace it with your own data. Keep every `id` unique: a future AI pass uses
+# those ids to stay anchored to real facts and never invent achievements.
+# =============================================================================
+
+personal:
+  name: Alex Fictitious
+  title: Backend Engineer
+  location: Lisbon, Portugal
+  email: alex.fictitious@example.com
+  phone: "+351 900 000 000"
+  linkedin: linkedin.com/in/alex-fictitious
+  github: github.com/alex-fictitious
+
+summary: >-
+  Backend engineer with 6 years building payment and data platforms in Python.
+  Focused on reliable services, clear APIs and pragmatic infrastructure. Comfortable
+  owning a feature from schema design to production monitoring.
+
+skill_categories:
+  - name: Languages
+    skills: [Python, SQL, Bash]
+  - name: Frameworks
+    skills: [FastAPI, REST API, pytest, Pydantic]
+  - name: Databases
+    skills: [PostgreSQL, Redis]
+  - name: Data & Messaging
+    skills: [Kafka]
+  - name: Cloud & Infrastructure
+    skills: [AWS, Docker, Terraform, Linux]
+
+experiences:
+  - company: Example Payments
+    role: Senior Backend Engineer
+    start_date: "2023-02"
+    end_date: null
+    achievements:
+      - id: ex-payments-webhooks
+        text: >-
+          Rebuilt the payment webhook pipeline on Kafka, processing 4M events per
+          day with idempotent consumers and full replay.
+        skills: [Python, Kafka, PostgreSQL, AWS]
+      - id: ex-payments-api
+        text: >-
+          Designed and shipped the public REST API, cutting median latency from
+          840ms to 120ms and reducing support tickets by 35%.
+        skills: [Python, FastAPI, REST API, PostgreSQL]
+      - id: ex-payments-db
+        text: >-
+          Migrated 12 services from self-managed PostgreSQL to Amazon RDS with
+          automated failover, removing a recurring on-call page.
+        skills: [PostgreSQL, AWS, Terraform]
+
+  - company: Fictional Data Co
+    role: Backend Engineer
+    start_date: "2021-01"
+    end_date: "2023-01"
+    achievements:
+      - id: ex-data-ingestion
+        text: >-
+          Built a batch ingestion pipeline moving 2TB/day from partner SFTP feeds
+          into a normalized PostgreSQL warehouse.
+        skills: [Python, PostgreSQL, Linux]
+      - id: ex-data-cron
+        text: >-
+          Replaced a fragile cron scheduler with containerised workers, cutting
+          failed job retries by 60%.
+        skills: [Python, Docker, Linux, Git]
+      - id: ex-data-auth
+        text: >-
+          Added role-based access to the internal dashboard, audited every query
+          against the new permissions model.
+        skills: [Python, REST API]
+
+projects:
+  - name: resumetailor
+    description: >-
+      Local command line tool that tailors a single YAML profile into a
+      job-specific resume, rendering the PDF with Typst.
+    skills: [Python, Typst, PyYAML]
+    url: github.com/example/resumetailor
+
+  - name: tinystatemachine
+    description: >-
+      Small library-free state machine for Python, used in a payments retry flow.
+    skills: [Python]
+    url: null
+
+education:
+  - institution: Universidade Exemplo
+    degree: BSc Computer Science
+    start_date: "2015-09"
+    end_date: "2019-07"
+
+languages:
+  - name: Portuguese
+    level: Native
+  - name: English
+    level: Professional
+  - name: Spanish
+    level: Conversational
