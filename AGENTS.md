@@ -114,12 +114,13 @@ Breaking any of these is a failed task, even if the code works.
 
 ## 6. Project state and stack
 
-The project is migrating from a Python CLI to a web application. The approved
-design is `docs/superpowers/specs/2026-10-19-spring-angular-migration-design.md`
-(once merged). Until the migration lands, the Python CLI in `resume_tailor/` is
-the working product; afterwards it is removed (it stays in git history).
+A web application: a Spring Boot API and an Angular UI, run together with
+Docker Compose. The design is
+`docs/superpowers/specs/2026-10-19-spring-angular-migration-design.md`. The
+Python CLI it replaced was removed and stays in git history; its
+`profile.yaml` can still be imported from the profile screen.
 
-**Target stack**
+**Stack**
 
 - **Backend** (`backend/`): Java 21, Spring Boot 4.1, Maven wrapper (`./mvnw`).
   - Package by feature (`auth`, `profile`, `job`, `matching`, `resume`,
@@ -153,9 +154,9 @@ Run what applies to the files you touched, and show the result:
 
 | Area | Command |
 |---|---|
-| Legacy Python CLI | `pip install -e ".[dev]" && pytest` |
 | Backend | `cd backend && ./mvnw verify` |
 | Frontend | `cd frontend && npm ci && npm run lint && npm test && npm run build` |
+| Full stack | `scripts/smoke.sh` (builds and starts `docker compose`) |
 | End to end | `cd frontend && npm run e2e` (needs `docker compose up`) |
 
 Integration tests use Testcontainers. If Docker is unavailable, say which tests
@@ -173,7 +174,8 @@ could not run; do not mark them as skipped in code.
 
 ## 9. Typst template gotchas
 
-Both have already broken `resume.typ` once:
+Both have already broken the template
+(`backend/src/main/resources/typst/resume.typ`) once:
 
 - Never use `luma()` with a bare number: in Typst 0.15 `luma(0.4)` evaluates to
   white and renders the whole resume invisible. Use explicit hex colors.
