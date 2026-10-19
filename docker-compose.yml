@@ -1,4 +1,5 @@
-# Local development services. Plan 3 adds the backend and frontend images.
+# The whole product: docker compose up --build, then open http://localhost:4200.
+# Settings come from .env (copy .env.example); JWT_SECRET is required.
 services:
   postgres:
     image: postgres:17-alpine
@@ -21,6 +22,35 @@ services:
     ports:
       - "1025:1025"
       - "8025:8025"
+
+  # Not published on the host: reachable only through nginx, the trusted proxy.
+  backend:
+    build: ./backend
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env (see .env.example)}
+      DATABASE_URL: jdbc:postgresql://postgres:5432/resume
+      DATABASE_USERNAME: resume
+      DATABASE_PASSWORD: resume
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:4200}
+      # Served over plain HTTP on localhost; set true behind HTTPS.
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
 
 volumes:
   postgres-data:
