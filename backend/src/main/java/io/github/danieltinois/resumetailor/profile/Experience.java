@@ -9,6 +9,6 @@ public record Experience(String id, String company, LocalizedText role, String s
         List<Achievement> achievements) {
 
     public Experience {
-        achievements = achievements == null ? List.of() : List.copyOf(achievements);
+        achievements = Lists.copy(achievements);
     }
 }

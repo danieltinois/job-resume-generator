@@ -7,6 +7,6 @@ import io.github.danieltinois.resumetailor.common.LocalizedText;
 public record SkillCategory(String id, LocalizedText name, List<String> skills) {
 
     public SkillCategory {
-        skills = skills == null ? List.of() : List.copyOf(skills);
+        skills = Lists.copy(skills);
     }
 }

@@ -8,6 +8,6 @@ import io.github.danieltinois.resumetailor.common.LocalizedText;
 public record Achievement(String id, LocalizedText text, List<String> skills) {
 
     public Achievement {
-        skills = skills == null ? List.of() : List.copyOf(skills);
+        skills = Lists.copy(skills);
     }
 }

@@ -1,0 +1,26 @@
+# Local development services. Plan 3 adds the backend and frontend images.
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: resume
+      POSTGRES_USER: resume
+      POSTGRES_PASSWORD: resume
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U resume"]
+      interval: 5s
+      retries: 10
+
+  # Captures every email the app sends; web UI on http://localhost:8025
+  mailpit:
+    image: axllent/mailpit
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+volumes:
+  postgres-data:

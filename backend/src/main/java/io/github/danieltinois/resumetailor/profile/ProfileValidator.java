@@ -33,13 +33,20 @@ public class ProfileValidator {
         for (int i = 0; i < profile.skillCategories().size(); i++) {
             SkillCategory category = profile.skillCategories().get(i);
             String path = "skillCategories[" + i + "]";
+            if (walk.isNull(path, category)) {
+                continue;
+            }
             walk.id(path, category.id());
             walk.localized(path + ".name", category.name(), true);
+            walk.skills(path + ".skills", category.skills());
         }
 
         for (int i = 0; i < profile.experiences().size(); i++) {
             Experience experience = profile.experiences().get(i);
             String path = "experiences[" + i + "]";
+            if (walk.isNull(path, experience)) {
+                continue;
+            }
             walk.id(path, experience.id());
             walk.required(path + ".company", experience.company());
             walk.localized(path + ".role", experience.role(), true);
@@ -48,22 +55,33 @@ public class ProfileValidator {
             for (int j = 0; j < experience.achievements().size(); j++) {
                 Achievement achievement = experience.achievements().get(j);
                 String achievementPath = path + ".achievements[" + j + "]";
+                if (walk.isNull(achievementPath, achievement)) {
+                    continue;
+                }
                 walk.id(achievementPath, achievement.id());
                 walk.localized(achievementPath + ".text", achievement.text(), true);
+                walk.skills(achievementPath + ".skills", achievement.skills());
             }
         }
 
         for (int i = 0; i < profile.projects().size(); i++) {
             Project project = profile.projects().get(i);
             String path = "projects[" + i + "]";
+            if (walk.isNull(path, project)) {
+                continue;
+            }
             walk.id(path, project.id());
             walk.required(path + ".name", project.name());
             walk.localized(path + ".description", project.description(), true);
+            walk.skills(path + ".skills", project.skills());
         }
 
         for (int i = 0; i < profile.education().size(); i++) {
             Education education = profile.education().get(i);
             String path = "education[" + i + "]";
+            if (walk.isNull(path, education)) {
+                continue;
+            }
             walk.id(path, education.id());
             walk.required(path + ".institution", education.institution());
             walk.localized(path + ".degree", education.degree(), true);
@@ -73,6 +91,9 @@ public class ProfileValidator {
 
         for (int i = 0; i < profile.languages().size(); i++) {
             LanguageSkill language = profile.languages().get(i);
+            if (walk.isNull("languages[" + i + "]", language)) {
+                continue;
+            }
             walk.localized("languages[" + i + "].name", language.name(), true);
             walk.localized("languages[" + i + "].level", language.level(), false);
         }
@@ -87,6 +108,21 @@ public class ProfileValidator {
 
         void fail(String path, String message) {
             violations.add(new ProfileViolation(path, message));
+        }
+
+        boolean isNull(String path, Object item) {
+            if (item == null) {
+                fail(path, "must not be null");
+            }
+            return item == null;
+        }
+
+        void skills(String path, List<String> skills) {
+            for (int i = 0; i < skills.size(); i++) {
+                if (skills.get(i) == null || skills.get(i).isBlank()) {
+                    fail(path + "[" + i + "]", "must not be empty");
+                }
+            }
         }
 
         void required(String path, String value) {

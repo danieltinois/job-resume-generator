@@ -15,11 +15,11 @@ public record Profile(Personal personal, LocalizedText summary, List<SkillCatego
         List<LanguageSkill> languages) {
 
     public Profile {
-        skillCategories = skillCategories == null ? List.of() : List.copyOf(skillCategories);
-        experiences = experiences == null ? List.of() : List.copyOf(experiences);
-        projects = projects == null ? List.of() : List.copyOf(projects);
-        education = education == null ? List.of() : List.copyOf(education);
-        languages = languages == null ? List.of() : List.copyOf(languages);
+        skillCategories = Lists.copy(skillCategories);
+        experiences = Lists.copy(experiences);
+        projects = Lists.copy(projects);
+        education = Lists.copy(education);
+        languages = Lists.copy(languages);
     }
 
     /** Every categorized skill in profile order, without duplicates. */
