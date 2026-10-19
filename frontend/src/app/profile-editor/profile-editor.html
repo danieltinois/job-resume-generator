@@ -1,0 +1,207 @@
+@if (form(); as form) {
+  <div class="layout">
+    <aside>
+      <app-section-nav [sections]="sections()" />
+    </aside>
+
+    <form class="content" [formGroup]="form" (submit)="$event.preventDefault()">
+      <header class="page-header">
+        <h1>{{ i18n.t('profile.title') }}</h1>
+        <mat-button-toggle-group
+          [value]="mode()"
+          (change)="mode.set($event.value)"
+          [attr.aria-label]="i18n.t('profile.mode')"
+        >
+          <mat-button-toggle value="pt">PT</mat-button-toggle>
+          <mat-button-toggle value="en">EN</mat-button-toggle>
+        </mat-button-toggle-group>
+      </header>
+
+      <section id="personal" formGroupName="personal">
+        <h2>{{ i18n.t('profile.section.personal') }}</h2>
+        <div class="grid">
+          <mat-form-field>
+            <mat-label>{{ i18n.t('profile.field.name') }}</mat-label>
+            <input matInput formControlName="name" autocomplete="name" />
+            <mat-error>{{ fieldError(form.controls.personal.controls.name, i18n) }}</mat-error>
+          </mat-form-field>
+          <app-localized-field
+            [group]="form.controls.personal.controls.title"
+            [mode]="mode()"
+            [label]="i18n.t('profile.field.headline')"
+          />
+          <mat-form-field>
+            <mat-label>{{ i18n.t('profile.field.location') }}</mat-label>
+            <input matInput formControlName="location" />
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>{{ i18n.t('profile.field.email') }}</mat-label>
+            <input matInput formControlName="email" type="email" />
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>{{ i18n.t('profile.field.phone') }}</mat-label>
+            <input matInput formControlName="phone" type="tel" />
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>{{ i18n.t('profile.field.linkedin') }}</mat-label>
+            <input matInput formControlName="linkedin" />
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>{{ i18n.t('profile.field.github') }}</mat-label>
+            <input matInput formControlName="github" />
+          </mat-form-field>
+        </div>
+      </section>
+
+      <section id="summary">
+        <h2>{{ i18n.t('profile.section.summary') }}</h2>
+        <app-localized-field
+          [group]="form.controls.summary"
+          [mode]="mode()"
+          [label]="i18n.t('profile.field.summary')"
+          [multiline]="true"
+        />
+      </section>
+
+      <section id="skillCategories">
+        <h2>{{ i18n.t('profile.section.skillCategories') }}</h2>
+        @for (category of form.controls.skillCategories.controls; track category; let i = $index) {
+          <div class="item">
+            <app-localized-field
+              [group]="category.controls.name"
+              [mode]="mode()"
+              [label]="i18n.t('profile.field.category')"
+            />
+            <app-skill-chips
+              [control]="category.controls.skills"
+              [label]="i18n.t('profile.field.skills')"
+              [terms]="terms()"
+              [extra]="ownSkills()"
+            />
+            <button mat-button type="button" (click)="removeAt(form.controls.skillCategories, i)">
+              {{ i18n.t('common.remove') }}
+            </button>
+          </div>
+        }
+        <button mat-stroked-button type="button" (click)="add(form.controls.skillCategories, 'category')">
+          + {{ i18n.t('profile.add.category') }}
+        </button>
+      </section>
+
+      <section id="experiences">
+        <h2>{{ i18n.t('profile.section.experiences') }}</h2>
+        <button mat-stroked-button type="button" (click)="addExperience(form)">
+          + {{ i18n.t('profile.add.experience') }}
+        </button>
+        @for (experience of form.controls.experiences.controls; track experience; let i = $index) {
+          <app-experience-card
+            [experience]="experience"
+            [mode]="mode()"
+            [expanded]="expanded() === experience.controls.id.value"
+            [suggestions]="ownSkills()"
+            [terms]="terms()"
+            (expandToggle)="toggle(experience.controls.id.value)"
+            (remove)="removeAt(form.controls.experiences, i)"
+          />
+        }
+      </section>
+
+      <section id="projects">
+        <h2>{{ i18n.t('profile.section.projects') }}</h2>
+        @for (project of form.controls.projects.controls; track project; let i = $index) {
+          <div class="item">
+            <mat-form-field>
+              <mat-label>{{ i18n.t('profile.field.projectName') }}</mat-label>
+              <input matInput [formControl]="project.controls.name" />
+              <mat-error>{{ fieldError(project.controls.name, i18n) }}</mat-error>
+            </mat-form-field>
+            <app-localized-field
+              [group]="project.controls.description"
+              [mode]="mode()"
+              [label]="i18n.t('profile.field.description')"
+              [multiline]="true"
+            />
+            <app-skill-chips
+              [control]="project.controls.skills"
+              [label]="i18n.t('profile.field.skills')"
+              [terms]="terms()"
+              [extra]="ownSkills()"
+            />
+            <mat-form-field>
+              <mat-label>{{ i18n.t('profile.field.url') }}</mat-label>
+              <input matInput [formControl]="project.controls.url" />
+            </mat-form-field>
+            <button mat-button type="button" (click)="removeAt(form.controls.projects, i)">
+              {{ i18n.t('common.remove') }}
+            </button>
+          </div>
+        }
+        <button mat-stroked-button type="button" (click)="add(form.controls.projects, 'project')">
+          + {{ i18n.t('profile.add.project') }}
+        </button>
+      </section>
+
+      <section id="education">
+        <h2>{{ i18n.t('profile.section.education') }}</h2>
+        @for (education of form.controls.education.controls; track education; let i = $index) {
+          <div class="item">
+            <mat-form-field>
+              <mat-label>{{ i18n.t('profile.field.institution') }}</mat-label>
+              <input matInput [formControl]="education.controls.institution" />
+              <mat-error>{{ fieldError(education.controls.institution, i18n) }}</mat-error>
+            </mat-form-field>
+            <app-localized-field
+              [group]="education.controls.degree"
+              [mode]="mode()"
+              [label]="i18n.t('profile.field.degree')"
+            />
+            <div class="dates">
+              <mat-form-field>
+                <mat-label>{{ i18n.t('profile.field.start') }}</mat-label>
+                <input matInput [formControl]="education.controls.startDate" />
+                <mat-error>{{ fieldError(education.controls.startDate, i18n) }}</mat-error>
+              </mat-form-field>
+              <mat-form-field>
+                <mat-label>{{ i18n.t('profile.field.end') }}</mat-label>
+                <input matInput [formControl]="education.controls.endDate" />
+                <mat-error>{{ fieldError(education.controls.endDate, i18n) }}</mat-error>
+              </mat-form-field>
+            </div>
+            <button mat-button type="button" (click)="removeAt(form.controls.education, i)">
+              {{ i18n.t('common.remove') }}
+            </button>
+          </div>
+        }
+        <button mat-stroked-button type="button" (click)="add(form.controls.education, 'education')">
+          + {{ i18n.t('profile.add.education') }}
+        </button>
+      </section>
+
+      <section id="languages">
+        <h2>{{ i18n.t('profile.section.languages') }}</h2>
+        @for (language of form.controls.languages.controls; track language; let i = $index) {
+          <div class="item row">
+            <app-localized-field
+              [group]="language.controls.name"
+              [mode]="mode()"
+              [label]="i18n.t('profile.field.language')"
+            />
+            <app-localized-field
+              [group]="language.controls.level"
+              [mode]="mode()"
+              [label]="i18n.t('profile.field.level')"
+            />
+            <button mat-button type="button" (click)="removeAt(form.controls.languages, i)">
+              {{ i18n.t('common.remove') }}
+            </button>
+          </div>
+        }
+        <button mat-stroked-button type="button" (click)="add(form.controls.languages, 'language')">
+          + {{ i18n.t('profile.add.language') }}
+        </button>
+      </section>
+    </form>
+  </div>
+} @else {
+  <p class="loading" role="status">{{ i18n.t('common.loading') }}</p>
+}

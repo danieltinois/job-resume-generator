@@ -263,19 +263,36 @@ function nearestControlPath(form: ProfileForm, path: string): string {
   return path;
 }
 
-/** Free-text fields with Portuguese but no English: they fall back to Portuguese in an EN resume. */
+export type ProfileSection =
+  | 'personal'
+  | 'summary'
+  | 'skillCategories'
+  | 'experiences'
+  | 'projects'
+  | 'education'
+  | 'languages';
+
+const lacksEnglish = (value: LocalizedText | null | undefined): boolean => !!value?.pt?.trim() && !value.en?.trim();
+const count = (values: (LocalizedText | null | undefined)[]): number => values.filter(lacksEnglish).length;
+
+/** Per section, the free-text fields with Portuguese but no English (they fall back to Portuguese). */
+export function missingEnglishBySection(profile: Profile): Record<ProfileSection, number> {
+  return {
+    personal: count([profile.personal?.title]),
+    summary: count([profile.summary]),
+    skillCategories: count((profile.skillCategories ?? []).map((category) => category.name)),
+    experiences: count(
+      (profile.experiences ?? []).flatMap((experience) => [
+        experience.role,
+        ...(experience.achievements ?? []).map((achievement) => achievement.text),
+      ]),
+    ),
+    projects: count((profile.projects ?? []).map((project) => project.description)),
+    education: count((profile.education ?? []).map((education) => education.degree)),
+    languages: count((profile.languages ?? []).flatMap((language) => [language.name, language.level])),
+  };
+}
+
 export function missingEnglish(profile: Profile): number {
-  const texts: (LocalizedText | null | undefined)[] = [
-    profile.personal?.title,
-    profile.summary,
-    ...(profile.skillCategories ?? []).map((category) => category.name),
-    ...(profile.experiences ?? []).flatMap((experience) => [
-      experience.role,
-      ...(experience.achievements ?? []).map((achievement) => achievement.text),
-    ]),
-    ...(profile.projects ?? []).map((project) => project.description),
-    ...(profile.education ?? []).map((education) => education.degree),
-    ...(profile.languages ?? []).flatMap((language) => [language.name, language.level]),
-  ];
-  return texts.filter((value) => value?.pt?.trim() && !value.en?.trim()).length;
+  return Object.values(missingEnglishBySection(profile)).reduce((total, value) => total + value, 0);
 }
