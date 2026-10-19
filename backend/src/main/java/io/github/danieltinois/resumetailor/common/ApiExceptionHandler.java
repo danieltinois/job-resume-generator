@@ -17,6 +17,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import io.github.danieltinois.resumetailor.auth.AuthException;
+import io.github.danieltinois.resumetailor.profile.InvalidImportException;
 import io.github.danieltinois.resumetailor.profile.ProfileValidationException;
 import io.github.danieltinois.resumetailor.profile.VersionConflictException;
 
@@ -63,9 +64,8 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
     }
 
-    /** Bad input that a parser rejected, e.g. an invalid YAML import. */
-    @ExceptionHandler(IllegalArgumentException.class)
-    ProblemDetail invalidInput(IllegalArgumentException e) {
+    @ExceptionHandler(InvalidImportException.class)
+    ProblemDetail invalidImport(InvalidImportException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_CONTENT, e.getMessage());
     }
 

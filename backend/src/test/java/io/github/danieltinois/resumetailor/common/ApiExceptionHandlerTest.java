@@ -40,6 +40,11 @@ class ApiExceptionHandlerTest extends IntegrationTest {
             throw new IllegalStateException("secret internal detail");
         }
 
+        @GetMapping("/api/test/bad-argument")
+        Body badArgument() {
+            throw new IllegalArgumentException("secret internal detail");
+        }
+
         @GetMapping("/api/test/missing")
         Body missing() {
             throw new NotFoundException();
@@ -64,6 +69,13 @@ class ApiExceptionHandlerTest extends IntegrationTest {
     @Test
     void unexpectedErrorIsGeneric500() throws Exception {
         mvc.perform(get("/api/test/boom").with(jwt()))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.detail").value("Unexpected error"));
+    }
+
+    @Test
+    void internalIllegalArgumentIsGeneric500() throws Exception {
+        mvc.perform(get("/api/test/bad-argument").with(jwt()))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.detail").value("Unexpected error"));
     }

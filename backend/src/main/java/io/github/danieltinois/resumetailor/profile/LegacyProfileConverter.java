@@ -34,10 +34,10 @@ public class LegacyProfileConverter {
         try {
             root = new Yaml(new SafeConstructor(new LoaderOptions())).load(yaml);
         } catch (YAMLException e) {
-            throw new IllegalArgumentException("Invalid YAML: " + e.getMessage(), e);
+            throw new InvalidImportException("Invalid YAML: " + e.getMessage(), e);
         }
         if (!(root instanceof Map<?, ?> map)) {
-            throw new IllegalArgumentException("Invalid profile: the YAML root must be a mapping");
+            throw new InvalidImportException("Invalid profile: the YAML root must be a mapping");
         }
         return new Reader(textLanguage).profile(map);
     }
@@ -121,7 +121,7 @@ public class LegacyProfileConverter {
             if (value instanceof Map<?, ?> map) {
                 return map;
             }
-            throw new IllegalArgumentException("Invalid profile: expected a mapping, got " + value);
+            throw new InvalidImportException("Invalid profile: expected a mapping, got " + value);
         }
 
         private static List<?> list(Object value) {
@@ -131,7 +131,7 @@ public class LegacyProfileConverter {
             if (value instanceof List<?> list) {
                 return list;
             }
-            throw new IllegalArgumentException("Invalid profile: expected a list, got " + value);
+            throw new InvalidImportException("Invalid profile: expected a list, got " + value);
         }
 
         private static List<String> strings(Object value) {
