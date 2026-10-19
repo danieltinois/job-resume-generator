@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import io.github.danieltinois.resumetailor.auth.User;
 import io.github.danieltinois.resumetailor.common.CurrentUser;
 import io.github.danieltinois.resumetailor.common.Language;
@@ -26,6 +29,7 @@ import io.github.danieltinois.resumetailor.resume.Selection;
 import io.github.danieltinois.resumetailor.resume.SelectionSuggester;
 
 /** How the user's profile matches one job, and the selection the review screen starts from. */
+@Tag(name = "Jobs")
 @RestController
 public class AnalysisController {
 
@@ -54,6 +58,7 @@ public class AnalysisController {
     }
 
     /** @param lang the resume language; defaults to the language detected in the job */
+    @Operation(summary = "Match the profile against a job and suggest a selection")
     @GetMapping("/api/jobs/{id}/analysis")
     public Analysis analyze(@PathVariable UUID id, @RequestParam(required = false) Language lang,
             Authentication authentication) {

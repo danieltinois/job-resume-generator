@@ -6,8 +6,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import io.github.danieltinois.resumetailor.common.CurrentUser;
 
+@Tag(name = "Auth")
 @RestController
 public class MeController {
 
@@ -21,6 +25,7 @@ public class MeController {
         this.currentUser = currentUser;
     }
 
+    @Operation(summary = "The signed-in user")
     @GetMapping("/api/me")
     public Me me(Authentication authentication) {
         User user = currentUser.require(authentication);

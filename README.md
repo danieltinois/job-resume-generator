@@ -23,7 +23,11 @@ cd backend && ./mvnw spring-boot:run           # API on http://localhost:8080
 ```
 
 Emails (verification, password reset) appear in Mailpit at
-http://localhost:8025. Run the tests with `cd backend && ./mvnw verify`
+http://localhost:8025. The API is documented in Swagger UI at
+http://localhost:8080/swagger-ui.html (OpenAPI JSON at `/v3/api-docs`): sign in
+with `POST /api/auth/login`, paste the `accessToken` into **Authorize**, and
+every endpoint can be tried from the browser. Set `API_DOCS_ENABLED=false` in
+production. Run the tests with `cd backend && ./mvnw verify`
 (Docker must be running: integration tests use Testcontainers).
 
 ## CLI requirements
