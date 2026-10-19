@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.postgresql.PostgreSQLContainer;
@@ -18,6 +19,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
         "app.cookie-secure=false",
         "app.base-url=http://app.test" })
 @AutoConfigureMockMvc
+@Import(RecordingMailer.Config.class)
 public abstract class IntegrationTest {
 
     @ServiceConnection
@@ -33,8 +35,12 @@ public abstract class IntegrationTest {
     @Autowired
     protected JdbcClient jdbc;
 
+    @Autowired
+    protected RecordingMailer mailer;
+
     @BeforeEach
     void wipeUserData() {
         jdbc.sql("TRUNCATE users CASCADE").update();
+        mailer.sent.clear();
     }
 }

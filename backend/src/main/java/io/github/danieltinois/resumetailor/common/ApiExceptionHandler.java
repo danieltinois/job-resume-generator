@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import io.github.danieltinois.resumetailor.auth.AuthException;
+
 /**
  * Every error leaves as an RFC 7807 problem. Validation errors list the
  * offending paths; unexpected errors never expose their cause.
@@ -40,6 +42,11 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(UnauthenticatedException.class)
     ProblemDetail unauthenticated(UnauthenticatedException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, e.getMessage());
+    }
+
+    @ExceptionHandler(AuthException.class)
+    ProblemDetail auth(AuthException e) {
+        return ProblemDetail.forStatusAndDetail(e.status(), e.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
