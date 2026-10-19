@@ -78,6 +78,41 @@ public class AuthService {
         return startSession(user.id());
     }
 
+    /**
+     * Exchanges a refresh token for a new access token and the next refresh
+     * token of the same family. A token that was already used means it was
+     * stolen or replayed: the whole family is revoked, so whoever holds the
+     * newer token is signed out too.
+     */
+    @Transactional(noRollbackFor = AuthException.class)
+    public Session refresh(String raw) {
+        if (raw == null || raw.isBlank()) {
+            throw sessionExpired();
+        }
+        TokenStore.StoredToken stored = tokens.find(raw, TokenType.REFRESH).orElseThrow(AuthService::sessionExpired);
+        if (stored.usedAt() != null) {
+            tokens.revokeFamily(stored.family());
+            throw sessionExpired();
+        }
+        if (tokens.consume(raw, TokenType.REFRESH).isEmpty()) {
+            // Expired, or used by a concurrent request a moment ago.
+            throw sessionExpired();
+        }
+        String next = tokens.issue(stored.userId(), TokenType.REFRESH, RefreshCookies.TTL, stored.family());
+        return new Session(jwt.issue(stored.userId()), next);
+    }
+
+    @Transactional
+    public void logout(String raw) {
+        if (raw != null && !raw.isBlank()) {
+            tokens.find(raw, TokenType.REFRESH).ifPresent(stored -> tokens.revokeFamily(stored.family()));
+        }
+    }
+
+    private static AuthException sessionExpired() {
+        return new AuthException(HttpStatus.UNAUTHORIZED, "Session expired, sign in again");
+    }
+
     /** A new access token and the first refresh token of a new family. */
     public Session startSession(UUID userId) {
         String refresh = tokens.issue(userId, TokenType.REFRESH, RefreshCookies.TTL, UUID.randomUUID());

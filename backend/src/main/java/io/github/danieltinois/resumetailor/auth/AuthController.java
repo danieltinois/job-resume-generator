@@ -2,7 +2,9 @@ package io.github.danieltinois.resumetailor.auth;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -69,6 +71,24 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AccessToken> login(@Valid @RequestBody LoginRequest request, HttpServletRequest http) {
         return withSession(auth.login(request.email(), request.password(), http.getRemoteAddr()));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(@CookieValue(name = RefreshCookies.NAME, required = false) String token) {
+        try {
+            return withSession(auth.refresh(token));
+        } catch (AuthException e) {
+            // A dead refresh cookie is cleared, so the browser stops sending it.
+            return ResponseEntity.status(e.status())
+                    .header(HttpHeaders.SET_COOKIE, cookies.clear().toString())
+                    .body(ProblemDetail.forStatusAndDetail(e.status(), e.getMessage()));
+        }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@CookieValue(name = RefreshCookies.NAME, required = false) String token) {
+        auth.logout(token);
+        return ResponseEntity.noContent().header(HttpHeaders.SET_COOKIE, cookies.clear().toString()).build();
     }
 
     ResponseEntity<AccessToken> withSession(AuthService.Session session) {

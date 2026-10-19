@@ -58,6 +58,19 @@ public class TokenStore {
                 .optional();
     }
 
+    /** Looks a token up without using it. */
+    public Optional<StoredToken> find(String raw, TokenType type) {
+        return jdbc.sql("SELECT user_id, family, used_at, expires_at FROM auth_tokens WHERE token_hash = ? AND type = ?")
+                .params(hash(raw), type.name())
+                .query(TokenStore::map)
+                .optional();
+    }
+
+    /** Ends a login: every unused token of the family stops working. */
+    public void revokeFamily(UUID family) {
+        jdbc.sql("UPDATE auth_tokens SET used_at = now() WHERE family = ? AND used_at IS NULL").param(family).update();
+    }
+
     static String hash(String raw) {
         try {
             byte[] digest = MessageDigest.getInstance("SHA-256").digest(raw.getBytes(StandardCharsets.UTF_8));
