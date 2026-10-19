@@ -121,7 +121,7 @@ the working product; afterwards it is removed (it stays in git history).
 
 **Target stack**
 
-- **Backend** (`backend/`): Java 21, Spring Boot 3, Maven wrapper (`./mvnw`).
+- **Backend** (`backend/`): Java 21, Spring Boot 4.1, Maven wrapper (`./mvnw`).
   - Package by feature (`auth`, `profile`, `job`, `matching`, `resume`,
     `common`), not by layer.
   - Records for DTOs and value types; constructor injection only.

@@ -12,3 +12,9 @@ output/
 # Your actual career data. Never committed. profile.example.yaml is the
 # committed, fictional starting point.
 profile/profile.yaml
+
+# Maven build output
+backend/target/
+
+# Execution scratch of the superpowers workflow
+.superpowers/

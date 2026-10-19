@@ -8,7 +8,7 @@
 
 Turn the `resume-tailor` Python CLI into a multi-user web application:
 
-- a **Spring Boot** backend that owns profiles, jobs, matching and PDF rendering;
+- a **Spring Boot 4.1** backend (3.x left open-source support in June 2026) that owns profiles, jobs, matching and PDF rendering;
 - an **Angular** frontend built for filling in a long, nested profile quickly;
 - **bilingual resumes** (PT-BR and EN), because the owner applies to both
   Brazilian and international jobs.
@@ -52,7 +52,7 @@ Spring Boot API ──► PostgreSQL (users, tokens, profiles JSONB, jobs, resum
 
 ```
 job-resume-generator/
-├── backend/                     Spring Boot 3 · Java 21 · Maven wrapper
+├── backend/                     Spring Boot 4.1 · Java 21 · Maven wrapper
 │   └── src/main/java/io/github/danieltinois/resumetailor/
 │       ├── auth/        registration, login, JWT, refresh, Google OAuth2, email
 │       ├── profile/     Profile record, validation, YAML import, JSONB repository
