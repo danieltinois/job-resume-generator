@@ -24,3 +24,4 @@ export type Me = Schemas['Me'];
 export type Providers = Schemas['Providers'];
 export type Problem = Schemas['Problem'];
 export type Language = NonNullable<ResumeRequest['language']>;
+export type TechTerm = Schemas['TechTerm'];

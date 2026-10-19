@@ -1,3 +1,11 @@
+server:
+  # Behind nginx: take the client address from X-Forwarded-For, but only from a trusted proxy.
+  forward-headers-strategy: native
+  tomcat:
+    remoteip:
+      # Default: private and loopback ranges, where the compose network's nginx lives.
+      internal-proxies: ${TRUSTED_PROXIES:10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2[0-9]|3[0-1])\.\d{1,3}\.\d{1,3}|127\.\d{1,3}\.\d{1,3}\.\d{1,3}|0:0:0:0:0:0:0:1}
+
 spring:
   application:
     name: resume-tailor

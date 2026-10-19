@@ -551,6 +551,20 @@
         },
         "type" : "object"
       },
+      "TechTerm" : {
+        "properties" : {
+          "aliases" : {
+            "items" : {
+              "type" : "string"
+            },
+            "type" : "array"
+          },
+          "canonical" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "TokenRequest" : {
         "properties" : {
           "token" : {
@@ -1463,6 +1477,41 @@
         } ],
         "summary" : "Download a saved resume as rendered when saved",
         "tags" : [ "Resumes" ]
+      }
+    },
+    "/api/tech-terms" : {
+      "get" : {
+        "operationId" : "list_2",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/TechTerm"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Error, as an RFC 7807 problem"
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ],
+        "summary" : "Known technologies and their aliases, for skill autocomplete",
+        "tags" : [ "Profile" ]
       }
     }
   },
