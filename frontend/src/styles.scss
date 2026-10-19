@@ -37,3 +37,35 @@ body {
   height: 100%;
 }
 /* You can add global styles to this file, and also import other style files */
+
+/* Sign-in and account screens: one narrow card, centred. */
+.auth-card {
+  max-width: 420px;
+  margin: 48px auto;
+  padding: 24px;
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .links {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 16px;
+  }
+
+  .divider {
+    text-align: center;
+    margin: 16px 0 8px;
+  }
+}
+
+.notice {
+  margin: 8px 0;
+}
+
+.notice.error {
+  color: var(--mat-sys-error);
+}
