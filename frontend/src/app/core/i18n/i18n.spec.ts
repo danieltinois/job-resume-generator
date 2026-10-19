@@ -2,13 +2,17 @@ import { TestBed } from '@angular/core/testing';
 import { BROWSER_LANGUAGE, I18n } from './i18n';
 
 describe('I18n', () => {
-  beforeEach(() => {
+  // Spec files share one localStorage (no isolation), so the remembered
+  // choice must not outlive these tests.
+  const forgetChoice = () => {
     try {
       localStorage.removeItem('ui-lang');
     } catch {
       // storage unavailable: fine
     }
-  });
+  };
+  beforeEach(forgetChoice);
+  afterEach(forgetChoice);
 
   it('follows a Portuguese browser', () => {
     TestBed.configureTestingModule({ providers: [{ provide: BROWSER_LANGUAGE, useValue: 'pt-BR' }] });

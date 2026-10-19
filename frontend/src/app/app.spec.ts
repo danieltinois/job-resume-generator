@@ -5,6 +5,7 @@ import { AuthStore } from './core/auth/auth-store';
 
 describe('App', () => {
   beforeEach(async () => {
+    localStorage.removeItem('ui-lang');
     await TestBed.configureTestingModule({ imports: [App], providers: apiTestProviders }).compileComponents();
   });
 
