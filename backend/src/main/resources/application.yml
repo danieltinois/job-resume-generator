@@ -23,3 +23,6 @@ app:
   base-url: ${APP_BASE_URL:http://localhost:4200}
   cookie-secure: ${COOKIE_SECURE:true}
   mail-from: ${MAIL_FROM:no-reply@localhost}
+  google:
+    client-id: ${GOOGLE_CLIENT_ID:}
+    client-secret: ${GOOGLE_CLIENT_SECRET:}

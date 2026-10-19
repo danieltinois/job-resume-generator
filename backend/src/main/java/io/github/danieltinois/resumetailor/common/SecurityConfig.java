@@ -1,5 +1,6 @@
 package io.github.danieltinois.resumetailor.common;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -11,10 +12,13 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 
+import io.github.danieltinois.resumetailor.auth.AuthProperties;
+import io.github.danieltinois.resumetailor.auth.GoogleLoginSuccessHandler;
 import io.github.danieltinois.resumetailor.auth.JwtService;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -27,7 +31,9 @@ import tools.jackson.databind.json.JsonMapper;
 public class SecurityConfig {
 
     @Bean
-    SecurityFilterChain api(HttpSecurity http, AuthenticationEntryPoint problemEntryPoint) throws Exception {
+    SecurityFilterChain api(HttpSecurity http, AuthenticationEntryPoint problemEntryPoint,
+            ObjectProvider<ClientRegistrationRepository> google, GoogleLoginSuccessHandler googleSuccess,
+            AuthProperties properties) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
@@ -39,6 +45,12 @@ public class SecurityConfig {
                         .jwt(Customizer.withDefaults())
                         .authenticationEntryPoint(problemEntryPoint))
                 .exceptionHandling(errors -> errors.authenticationEntryPoint(problemEntryPoint));
+        if (google.getIfAvailable() != null) {
+            http.oauth2Login(login -> login
+                    .successHandler(googleSuccess)
+                    .failureHandler((request, response, exception) ->
+                            response.sendRedirect(properties.baseUrl() + "/login?error=google")));
+        }
         return http.build();
     }
 
