@@ -24,9 +24,12 @@ import { I18n } from '../core/i18n/i18n';
         <p>{{ i18n.t('profile.import.warning') }}</p>
       } @else {
         <p>{{ i18n.t('profile.import.help') }}</p>
-        <input type="file" accept=".yaml,.yml" (change)="pick($event)" />
-        <p>{{ i18n.t('profile.import.language') }}</p>
-        <mat-button-toggle-group [value]="language()" (change)="language.set($event.value)">
+        <label class="file">
+          <span>{{ i18n.t('profile.import.file') }}</span>
+          <input type="file" accept=".yaml,.yml" (change)="pick($event)" />
+        </label>
+        <p id="import-language">{{ i18n.t('profile.import.language') }}</p>
+        <mat-button-toggle-group aria-labelledby="import-language" [value]="language()" (change)="language.set($event.value)">
           <mat-button-toggle value="pt">PT</mat-button-toggle>
           <mat-button-toggle value="en">EN</mat-button-toggle>
         </mat-button-toggle-group>

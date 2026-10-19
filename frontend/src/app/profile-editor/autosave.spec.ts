@@ -213,4 +213,20 @@ describe('Autosave', () => {
     backend.expectNone('/api/profile');
     expect(autosave.hasUnsavedChanges()).toBe(true);
   });
+  it('reports an error, keeping the edits, when the saved version cannot be fetched after a conflict', async () => {
+    rename('Mine');
+
+    const saving = autosave.saveNow();
+    backend.expectOne('/api/profile').flush({ status: 409 }, { status: 409, statusText: 'Conflict' });
+    await vi.waitFor(() =>
+      backend
+        .expectOne((r) => r.method === 'GET' && r.url === '/api/profile')
+        .flush(null, { status: 503, statusText: 'Unavailable' }),
+    );
+
+    await expect(saving).resolves.toBeUndefined();
+    expect(autosave.status()).toBe('error');
+    expect(autosave.hasUnsavedChanges()).toBe(true);
+    expect(form.controls.personal.controls.name.value).toBe('Mine');
+  });
 });

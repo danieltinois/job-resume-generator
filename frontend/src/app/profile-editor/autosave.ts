@@ -62,6 +62,12 @@ export class Autosave {
     this.subscription = null;
   }
 
+  /** Stops saving on changes and waits for a save already under way, e.g. before the form is replaced. */
+  async settle(): Promise<void> {
+    this.stop();
+    await this.running;
+  }
+
   /** True while some edit is not on the server yet: typed, being saved, or rejected. */
   hasUnsavedChanges(): boolean {
     return this.dirty || this.running !== null;
@@ -129,7 +135,14 @@ export class Autosave {
     }
     this.status.set('conflict');
     const choice = await this.handlers.resolveConflict();
-    const latest = await firstValueFrom(this.http.get<StoredProfile>('/api/profile'));
+    let latest: StoredProfile;
+    try {
+      latest = await firstValueFrom(this.http.get<StoredProfile>('/api/profile'));
+    } catch {
+      // The edits stay unsaved; the next change (or leaving the page) tries again and meets the conflict again.
+      this.status.set('error');
+      return;
+    }
     if (choice === 'reload') {
       this.dirty = false;
       this.handlers.reload(latest);

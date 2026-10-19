@@ -2,6 +2,7 @@ package io.github.danieltinois.resumetailor.common;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
@@ -106,6 +107,14 @@ class OpenApiDocsTest {
         void swaggerUiIsServedWithoutAuthentication() throws Exception {
             mvc.perform(get("/swagger-ui/index.html")).andExpect(status().isOk());
             mvc.perform(get("/swagger-ui.html")).andExpect(status().is3xxRedirection());
+        }
+
+        @Test
+        void swaggerUiKeepsTheTokenOnlyInMemory() throws Exception {
+            // Swagger UI shares the app's origin: a persisted token would sit in localStorage.
+            mvc.perform(get("/v3/api-docs/swagger-config"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.persistAuthorization").value(false));
         }
     }
 

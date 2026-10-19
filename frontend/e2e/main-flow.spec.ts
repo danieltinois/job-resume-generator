@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { watchCsp } from './csp';
 import { latestLink } from './mailpit';
 
 const fixture = (path: string) => join(__dirname, '..', '..', path);
@@ -8,6 +9,7 @@ const fixture = (path: string) => join(__dirname, '..', '..', path);
 test('registers, imports a profile, tailors a resume and downloads the PDF', async ({ page }) => {
   const email = `e2e-${Date.now()}-${Math.floor(Math.random() * 1e6)}@example.com`;
   const password = 'correct horse battery staple';
+  const violations = watchCsp(page);
 
   await test.step('register and confirm the email', async () => {
     await page.goto('/register');
@@ -29,6 +31,8 @@ test('registers, imports a profile, tailors a resume and downloads the PDF', asy
     await page.getByLabel('Password').fill(password);
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'My jobs' })).toBeVisible();
+    await expect(page).toHaveTitle('Resume Tailor');
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   });
 
   await test.step('import the example profile', async () => {
@@ -52,6 +56,11 @@ test('registers, imports a profile, tailors a resume and downloads the PDF', asy
     await expect(page.locator('[data-test=matched]')).toContainText('Kafka');
     await expect(page.locator('[data-test=missing]')).toContainText('CI/CD');
     await expect(page.locator('iframe[title="Resume preview"]')).toHaveAttribute('src', /^blob:/);
+    // Headless builds without a PDF viewer download the PDF instead; where a viewer exists,
+    // the preview must reach it (a blocking security policy would leave the frame empty).
+    if (await page.evaluate(() => navigator.pdfViewerEnabled)) {
+      await expect(page.frameLocator('iframe[title="Resume preview"]').locator('embed[type="application/pdf"]')).toHaveCount(1);
+    }
   });
 
   await test.step('save the resume and download the PDF', async () => {
@@ -72,4 +81,6 @@ test('registers, imports a profile, tailors a resume and downloads the PDF', asy
     await page.goto('/profile');
     await expect(page).toHaveURL(/\/login/);
   });
+
+  expect(violations).toEqual([]);
 });

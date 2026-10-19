@@ -75,7 +75,8 @@ class RefreshTest extends IntegrationTest {
         String rotated = cookieOf(refresh(loginCookie));
 
         refresh(loginCookie).andExpect(status().isUnauthorized())
-                .andExpect(header().doesNotExist("Set-Cookie"));
+                .andExpect(header().doesNotExist("Set-Cookie"))
+                .andExpect(jsonPath("$.type").value(AuthController.CONCURRENT_REFRESH_TYPE));
         refresh(rotated).andExpect(status().isOk());
     }
 
@@ -85,7 +86,8 @@ class RefreshTest extends IntegrationTest {
         ageUsedTokens();
 
         refresh(loginCookie).andExpect(status().isUnauthorized())
-                .andExpect(header().string("Set-Cookie", containsString("Max-Age=0")));
+                .andExpect(header().string("Set-Cookie", containsString("Max-Age=0")))
+                .andExpect(jsonPath("$.type").doesNotExist());
         refresh(rotated).andExpect(status().isUnauthorized());
     }
 

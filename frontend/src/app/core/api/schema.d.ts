@@ -469,6 +469,8 @@ export interface components {
              */
             status?: number;
             title?: string;
+            /** @description Problem type URI; absent means about:blank. urn:resume-tailor:problem:concurrent-refresh: retry the refresh */
+            type?: string;
         };
         Profile: {
             education?: components["schemas"]["Education"][];

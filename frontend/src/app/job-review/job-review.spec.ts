@@ -64,6 +64,25 @@ describe('JobReview', () => {
     expect(fixture.nativeElement.textContent).toContain('summary: x');
   });
 
+  it('keeps the analysis of the latest language when switching fast', async () => {
+    const fixture = await render();
+    const component = fixture.componentInstance;
+
+    component.setLanguage('PT');
+    component.setLanguage('EN');
+    const pt = backend.expectOne('/api/jobs/j1/analysis?lang=PT');
+    backend.expectOne('/api/jobs/j1/analysis?lang=EN').flush({ ...ANALYSIS, warnings: ['in English'] });
+    if (!pt.cancelled) {
+      pt.flush({ ...ANALYSIS, language: 'PT', warnings: ['in Portuguese'] });
+    }
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(pt.cancelled).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain('in English');
+    expect(fixture.nativeElement.textContent).not.toContain('in Portuguese');
+  });
+
   it('saves and offers the download', async () => {
     const fixture = await render();
 
@@ -78,5 +97,48 @@ describe('JobReview', () => {
     fixture.nativeElement.querySelector('button[data-test="download"]').click();
     backend.expectOne('/api/resumes/r1/pdf').flush(new Blob(['%PDF']));
     await vi.waitFor(() => expect(URL.createObjectURL).toHaveBeenCalled());
+  });
+  it('says when the job cannot be loaded instead of loading forever', async () => {
+    TestBed.configureTestingModule({ imports: [JobReview], providers: apiTestProviders });
+    backend = TestBed.inject(HttpTestingController);
+    TestBed.inject(AuthStore).acceptToken('token');
+    const fixture = TestBed.createComponent(JobReview);
+    fixture.componentRef.setInput('id', 'gone');
+    fixture.detectChanges();
+
+    backend.expectOne('/api/jobs/gone').flush(null, { status: 404, statusText: 'Not Found' });
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('[role="alert"]')?.textContent).toContain('Could not load');
+    expect(fixture.nativeElement.textContent).not.toContain('Loading');
+  });
+
+  it('explains why a resume could not be saved', async () => {
+    const fixture = await render();
+
+    fixture.nativeElement.querySelector('button[data-test="save"]').click();
+    backend
+      .expectOne((request) => request.method === 'POST' && request.url === '/api/resumes')
+      .flush(
+        { status: 422, detail: 'The selection refers to an achievement that is no longer in the profile' },
+        { status: 422, statusText: 'Unprocessable Content' },
+      );
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.save [role="alert"]')?.textContent).toContain('no longer in the profile');
+    expect(fixture.nativeElement.querySelector('button[data-test="save"]').disabled).toBe(false);
+  });
+  it('names its controls for assistive technology', async () => {
+    const fixture = await render();
+    const element: HTMLElement = fixture.nativeElement;
+
+    const group = element.querySelector('mat-button-toggle-group')!;
+    expect(document.getElementById(group.getAttribute('aria-labelledby') ?? '')?.textContent).toContain('Resume language');
+    expect(element.querySelector('.score')?.textContent).toContain('Relevance score');
+    const skill = element.querySelector('.skill')!;
+    const names = [...skill.querySelectorAll('button')].map((button) => button.getAttribute('aria-label'));
+    expect(names).toEqual([expect.stringMatching(/^Move up: /), expect.stringMatching(/^Move down: /)]);
   });
 });

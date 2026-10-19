@@ -98,6 +98,9 @@ public class OpenApiConfig {
                 .addProperty("path", new StringSchema().example("experiences[0].achievements[2].text.pt"))
                 .addProperty("message", new StringSchema());
         return new ObjectSchema()
+                .addProperty("type", new StringSchema()
+                        .description("Problem type URI; absent means about:blank. "
+                                + "urn:resume-tailor:problem:concurrent-refresh: retry the refresh"))
                 .addProperty("status", new IntegerSchema().example(422))
                 .addProperty("title", new StringSchema())
                 .addProperty("detail", new StringSchema())

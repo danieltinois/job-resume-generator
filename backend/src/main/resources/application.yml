@@ -29,8 +29,8 @@ springdoc:
     enabled: ${app.api-docs-enabled}
   swagger-ui:
     enabled: ${app.api-docs-enabled}
-    # Keeps the Authorize token across page reloads while testing by hand.
-    persist-authorization: true
+    # Swagger UI shares the app's origin; a persisted token would land in localStorage.
+    persist-authorization: false
   paths-to-match: /api/**
 
 resume:

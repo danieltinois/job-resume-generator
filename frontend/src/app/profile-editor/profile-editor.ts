@@ -162,6 +162,8 @@ export class ProfileEditor {
   protected async openImport(): Promise<void> {
     const imported = await firstValueFrom(this.dialog.open(ImportDialog, { width: '520px' }).afterClosed());
     if (imported) {
+      // A save still in flight would bump the version under the import's save and fake a conflict.
+      await this.current()?.settle();
       // Keep the version: the import replaces the content, and the save that follows must still be current.
       this.load({ version: this.version(), data: imported });
       this.form()?.markAsDirty();

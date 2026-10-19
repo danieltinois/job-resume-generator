@@ -1,8 +1,15 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
+import { toProblem } from '../api/problem';
 import type { Me } from '../api/types';
 import { RefreshCoordinator } from './refresh-coordinator';
+
+/** Problem type the backend gives a refresh that lost a race with another tab (AuthController). */
+export const CONCURRENT_REFRESH_TYPE = 'urn:resume-tailor:problem:concurrent-refresh';
+
+/** How long the loser of a refresh race waits for the winner's new cookie to land before retrying. */
+const RACE_RETRY_DELAY_MS = 1000;
 
 interface AccessToken {
   accessToken: string;
@@ -51,19 +58,27 @@ export class AuthStore {
    * session may still be valid, so it is kept.
    */
   refresh(): Promise<string | null> {
-    return this.coordinator.run(async () => {
-      try {
-        const response = await firstValueFrom(this.http.post<AccessToken>('/api/auth/refresh', null));
-        this.acceptToken(response.accessToken);
-        return response.accessToken;
-      } catch (error) {
-        if (error instanceof HttpErrorResponse && error.status >= 400 && error.status < 500) {
-          this.clear();
-          return null;
-        }
+    return this.coordinator.run(() => this.exchange(true));
+  }
+
+  private async exchange(mayRetry: boolean): Promise<string | null> {
+    try {
+      const response = await firstValueFrom(this.http.post<AccessToken>('/api/auth/refresh', null));
+      this.acceptToken(response.accessToken);
+      return response.accessToken;
+    } catch (error) {
+      if (!(error instanceof HttpErrorResponse) || error.status < 400 || error.status >= 500) {
         throw error;
       }
-    });
+      // Without Web Locks (an insecure origin), another tab can rotate the cookie under this
+      // request. The session is fine: wait for the new cookie and try once more.
+      if (mayRetry && toProblem(error).type === CONCURRENT_REFRESH_TYPE) {
+        await new Promise((resolve) => setTimeout(resolve, RACE_RETRY_DELAY_MS));
+        return this.exchange(false);
+      }
+      this.clear();
+      return null;
+    }
   }
 
   async logout(): Promise<void> {

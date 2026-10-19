@@ -58,6 +58,9 @@ import { I18n } from '../core/i18n/i18n';
         } @empty {
           <p class="empty">{{ i18n.t('dashboard.noJobs') }}</p>
         }
+      } @else if (loadFailed()) {
+        <p class="notice error" role="alert">{{ i18n.t('common.loadFailed') }}</p>
+        <button mat-stroked-button type="button" data-test="retry" (click)="load()">{{ i18n.t('common.retry') }}</button>
       } @else {
         <p role="status">{{ i18n.t('common.loading') }}</p>
       }
@@ -116,18 +119,27 @@ export class Dashboard {
   protected readonly resumes = signal<ResumeSummary[]>([]);
   protected readonly profile = signal<StoredProfile | null>(null);
   protected readonly loaded = signal(false);
+  protected readonly loadFailed = signal(false);
   protected readonly profileEmpty = computed(() => !this.profile()?.data?.experiences?.length);
 
   constructor() {
+    this.load();
+  }
+
+  protected load(): void {
+    this.loadFailed.set(false);
     forkJoin({
       jobs: this.http.get<JobSummary[]>('/api/jobs'),
       resumes: this.http.get<ResumeSummary[]>('/api/resumes'),
       profile: this.http.get<StoredProfile>('/api/profile'),
-    }).subscribe(({ jobs, resumes, profile }) => {
-      this.jobs.set(jobs);
-      this.resumes.set(resumes);
-      this.profile.set(profile);
-      this.loaded.set(true);
+    }).subscribe({
+      next: ({ jobs, resumes, profile }) => {
+        this.jobs.set(jobs);
+        this.resumes.set(resumes);
+        this.profile.set(profile);
+        this.loaded.set(true);
+      },
+      error: () => this.loadFailed.set(true),
     });
   }
 
