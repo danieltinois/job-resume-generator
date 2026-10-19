@@ -1,5 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { MatDialog } from '@angular/material/dialog';
+import { of } from 'rxjs';
 import type { Profile } from '../core/api/types';
 import { AuthStore } from '../core/auth/auth-store';
 import example from '../../testing/profile-example.json';
@@ -112,5 +114,26 @@ describe('ProfileEditor', () => {
     window.dispatchEvent(dirty);
 
     expect(dirty.defaultPrevented).toBe(true);
+  });
+
+  it('lets a save in flight finish before importing over it, so the import does not conflict', async () => {
+    const fixture = await render();
+    const imported = { ...(example as Profile), personal: { ...(example as Profile).personal, name: 'Imported' } };
+    vi.spyOn(TestBed.inject(MatDialog), 'open').mockReturnValue({ afterClosed: () => of(imported) } as never);
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 's', ctrlKey: true, cancelable: true }));
+    const inFlight = backend.expectOne((request) => request.method === 'PUT');
+
+    const importing = (fixture.componentInstance as unknown as { openImport(): Promise<void> }).openImport();
+    await fixture.whenStable();
+    backend.expectNone((request) => request.method === 'PUT');
+    inFlight.flush({ version: 4 });
+
+    await vi.waitFor(() => {
+      const save = backend.expectOne((request) => request.method === 'PUT');
+      expect(save.request.body.version).toBe(4);
+      expect(save.request.body.data.personal.name).toBe('Imported');
+      save.flush({ version: 5 });
+    });
+    await importing;
   });
 });

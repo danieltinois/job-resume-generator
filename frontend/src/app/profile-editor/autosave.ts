@@ -62,6 +62,12 @@ export class Autosave {
     this.subscription = null;
   }
 
+  /** Stops saving on changes and waits for a save already under way, e.g. before the form is replaced. */
+  async settle(): Promise<void> {
+    this.stop();
+    await this.running;
+  }
+
   /** True while some edit is not on the server yet: typed, being saved, or rejected. */
   hasUnsavedChanges(): boolean {
     return this.dirty || this.running !== null;
