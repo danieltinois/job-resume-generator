@@ -64,6 +64,25 @@ describe('JobReview', () => {
     expect(fixture.nativeElement.textContent).toContain('summary: x');
   });
 
+  it('keeps the analysis of the latest language when switching fast', async () => {
+    const fixture = await render();
+    const component = fixture.componentInstance;
+
+    component.setLanguage('PT');
+    component.setLanguage('EN');
+    const pt = backend.expectOne('/api/jobs/j1/analysis?lang=PT');
+    backend.expectOne('/api/jobs/j1/analysis?lang=EN').flush({ ...ANALYSIS, warnings: ['in English'] });
+    if (!pt.cancelled) {
+      pt.flush({ ...ANALYSIS, language: 'PT', warnings: ['in Portuguese'] });
+    }
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(pt.cancelled).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain('in English');
+    expect(fixture.nativeElement.textContent).not.toContain('in Portuguese');
+  });
+
   it('saves and offers the download', async () => {
     const fixture = await render();
 

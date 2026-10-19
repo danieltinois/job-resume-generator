@@ -1,13 +1,13 @@
 import { HttpClient } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, input, signal } from '@angular/core';
-import { toObservable } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatChipsModule } from '@angular/material/chips';
 import { DomSanitizer } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
-import { filter, firstValueFrom, forkJoin } from 'rxjs';
+import { Subject, filter, firstValueFrom, forkJoin, switchMap } from 'rxjs';
 import type {
   Achievement,
   Analysis,
@@ -47,6 +47,7 @@ export class JobReview implements OnInit {
   protected readonly language = signal<Language>('PT');
   protected readonly saved = signal<{ id: string; warnings: string[] } | null>(null);
   protected readonly saving = signal(false);
+  private readonly languageChanges = new Subject<Language>();
 
   private readonly request = computed<ResumeRequest | null>(() =>
     this.analysis() ? { jobId: this.id(), language: this.language(), selection: this.state.selection() } : null,
@@ -70,6 +71,13 @@ export class JobReview implements OnInit {
 
   constructor() {
     this.destroyRef.onDestroy(() => this.preview.stop());
+    // A newer language cancels the analysis still in flight, so a late answer never wins.
+    this.languageChanges
+      .pipe(
+        switchMap((language) => this.http.get<Analysis>(`/api/jobs/${this.id()}/analysis`, { params: { lang: language } })),
+        takeUntilDestroyed(),
+      )
+      .subscribe((analysis) => this.analysis.set(analysis));
   }
 
   ngOnInit(): void {
@@ -90,9 +98,7 @@ export class JobReview implements OnInit {
   setLanguage(language: Language): void {
     this.language.set(language);
     this.saved.set(null);
-    this.http
-      .get<Analysis>(`/api/jobs/${this.id()}/analysis`, { params: { lang: language } })
-      .subscribe((analysis) => this.analysis.set(analysis));
+    this.languageChanges.next(language);
   }
 
   protected text(value: LocalizedText | null | undefined): string {
