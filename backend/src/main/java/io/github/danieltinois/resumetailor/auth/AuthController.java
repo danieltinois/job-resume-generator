@@ -36,13 +36,13 @@ public class AuthController {
         }
     }
 
-    public record LoginRequest(@NotBlank String email, @NotBlank String password) {
+    public record LoginRequest(@NotBlank @Size(max = 254) String email, @NotBlank String password) {
     }
 
     public record TokenRequest(@NotBlank String token) {
     }
 
-    public record EmailRequest(@NotBlank String email) {
+    public record EmailRequest(@NotBlank @Size(max = 254) String email) {
     }
 
     public record ResetRequest(@NotBlank String token,

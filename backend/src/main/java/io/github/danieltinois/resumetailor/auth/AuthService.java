@@ -24,12 +24,12 @@ public class AuthService {
     private final PasswordEncoder passwords;
     private final AccountMailer mailer;
     private final JwtService jwt;
-    private final LoginRateLimiter rateLimiter;
+    private final RateLimiter rateLimiter;
     private final AuthProperties properties;
     private final String dummyHash;
 
     public AuthService(UserRepository users, TokenStore tokens, PasswordEncoder passwords, AccountMailer mailer,
-            JwtService jwt, LoginRateLimiter rateLimiter, AuthProperties properties) {
+            JwtService jwt, RateLimiter rateLimiter, AuthProperties properties) {
         this.users = users;
         this.tokens = tokens;
         this.passwords = passwords;
@@ -89,7 +89,7 @@ public class AuthService {
     }
 
     public Session login(String email, String password, String ip) {
-        if (!rateLimiter.tryAcquire(ip, email)) {
+        if (!rateLimiter.tryAcquire(RateLimiter.LOGIN, ip, email)) {
             throw new AuthException(HttpStatus.TOO_MANY_REQUESTS, "Too many attempts, try again in a minute");
         }
         User user = users.findByEmail(email).orElse(null);

@@ -81,6 +81,11 @@ class LoginTest extends IntegrationTest {
     }
 
     @Test
+    void hugeEmailIs422() throws Exception {
+        login("a".repeat(5_000) + "@example.com", "correct-horse").andExpect(status().isUnprocessableContent());
+    }
+
+    @Test
     void overlongPasswordIsAPlainFailure() throws Exception {
         account("long@example.com", true);
 
