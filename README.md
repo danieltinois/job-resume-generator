@@ -106,6 +106,9 @@ Without Google credentials the app offers email and password only.
 - Set `APP_BASE_URL` to the public URL: it goes into the email links.
 - Set `API_DOCS_ENABLED=false` to turn off Swagger UI and `/v3/api-docs`.
 - Use a real SMTP server (`SMTP_*`, `MAIL_FROM`) instead of Mailpit.
+- The bundled nginx expects to be the edge: it passes the connection's address
+  as the client address. Behind another load balancer, configure nginx's
+  `real_ip` module for it, or the login rate limit counts the balancer.
 
 ## The template
 

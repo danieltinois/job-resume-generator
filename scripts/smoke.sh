@@ -45,5 +45,33 @@ check "SPA index" "$BASE_URL/" 200 '<app-root'
 check "SPA deep link" "$BASE_URL/profile" 200 '<app-root'
 check "API docs" "$BASE_URL/v3/api-docs" 200 '"openapi"'
 check "protected API needs a token" "$BASE_URL/api/me" 401
+check "API docs know the public URL" "$BASE_URL/v3/api-docs" 200 "\"url\":\"$BASE_URL\""
+
+# nginx drops server-level headers in a location that sets its own.
+for page in / /profile; do
+  headers=$(curl -s -o /dev/null -D - "$BASE_URL$page")
+  if printf '%s' "$headers" | grep -qi '^x-frame-options: SAMEORIGIN' \
+    && printf '%s' "$headers" | grep -qi '^x-content-type-options: nosniff'; then
+    echo "ok   security headers on $page"
+  else
+    echo "FAIL security headers on $page" >&2
+    fail=1
+  fi
+done
+
+# A client cannot pick its own address with X-Forwarded-For to dodge the login limit.
+email="smoke-$(date +%s)-$$@example.com"
+last=""
+for i in 1 2 3 4 5 6; do
+  last=$(curl -s -o /dev/null -w '%{http_code}' -H "X-Forwarded-For: 203.0.113.$i" \
+    -H 'Content-Type: application/json' -d "{\"email\":\"$email\",\"password\":\"not-the-password\"}" \
+    "$BASE_URL/api/auth/login")
+done
+if [ "$last" = 429 ]; then
+  echo "ok   login limit ignores a forged X-Forwarded-For"
+else
+  echo "FAIL login limit bypassed with a forged X-Forwarded-For: attempt 6 -> $last" >&2
+  fail=1
+fi
 
 exit "$fail"
