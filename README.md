@@ -6,7 +6,27 @@ One `profile.yaml`, one job description, one tailored PDF.
 profile.yaml + job.md -> python -> resume.json -> typst -> resume.pdf
 ```
 
-## Requirements
+## Backend (in progress)
+
+The project is moving to a web app: a Spring Boot API (`backend/`) and, next,
+an Angular UI. The design is in
+`docs/superpowers/specs/2026-10-19-spring-angular-migration-design.md`. Until
+the UI lands, the Python CLI below remains the way to generate resumes.
+
+Requirements: Java 21, Docker, and [Typst](https://typst.app) 0.15.0 on `PATH`.
+
+```bash
+docker compose up -d postgres mailpit          # database + email catcher
+cp .env.example .env                           # then edit JWT_SECRET
+set -a && . ./.env && set +a
+cd backend && ./mvnw spring-boot:run           # API on http://localhost:8080
+```
+
+Emails (verification, password reset) appear in Mailpit at
+http://localhost:8025. Run the tests with `cd backend && ./mvnw verify`
+(Docker must be running: integration tests use Testcontainers).
+
+## CLI requirements
 
 - Python 3.11+
 - [Typst](https://typst.app) on `PATH` (`scoop install typst` / `brew install typst` / `winget install Typst.Typst`)
