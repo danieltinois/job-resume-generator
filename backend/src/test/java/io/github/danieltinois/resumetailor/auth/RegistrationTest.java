@@ -89,6 +89,29 @@ class RegistrationTest extends IntegrationTest {
     }
 
     @Test
+    void mailFailureStillCreatesTheAccount() throws Exception {
+        mailer.failing = true;
+
+        register("alex@example.com", "correct-horse").andExpect(status().isCreated());
+
+        assertThat(users.findByEmail("alex@example.com")).isPresent();
+    }
+
+    @Test
+    void resendIsRateLimitedSilently() throws Exception {
+        String email = java.util.UUID.randomUUID() + "@example.com";
+        register(email, "correct-horse");
+        mailer.awaitCount(1);
+        for (int i = 0; i < 5; i++) {
+            mvc.perform(post("/api/auth/resend-verification").contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"email\":\"%s\"}".formatted(email)))
+                    .andExpect(status().isNoContent());
+        }
+
+        mailer.assertSentExactly(4);
+    }
+
+    @Test
     void invalidEmailIs422() throws Exception {
         register("not-an-email", "correct-horse").andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.errors[0].path").value("email"));
@@ -100,18 +123,20 @@ class RegistrationTest extends IntegrationTest {
                         .content("{\"email\":\"nobody@example.com\"}"))
                 .andExpect(status().isNoContent());
 
-        assertThat(mailer.sent).isEmpty();
+        mailer.assertSentExactly(0);
     }
 
     @Test
     void resendVerificationSendsANewLink() throws Exception {
-        register("alex@example.com", "correct-horse");
+        // Unique address: the mail rate limit outlives a single test.
+        String email = java.util.UUID.randomUUID() + "@example.com";
+        register(email, "correct-horse");
 
         mvc.perform(post("/api/auth/resend-verification").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"ALEX@example.com\"}"))
+                        .content("{\"email\":\"%s\"}".formatted(email.toUpperCase())))
                 .andExpect(status().isNoContent());
 
-        assertThat(mailer.sent).hasSize(2);
+        mailer.awaitCount(2);
         verify(mailer.last().token()).andExpect(status().isNoContent());
     }
 }

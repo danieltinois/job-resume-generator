@@ -23,17 +23,19 @@ public class AuthService {
     private final TokenStore tokens;
     private final PasswordEncoder passwords;
     private final AccountMailer mailer;
+    private final MailDispatcher mail;
     private final JwtService jwt;
     private final RateLimiter rateLimiter;
     private final AuthProperties properties;
     private final String dummyHash;
 
     public AuthService(UserRepository users, TokenStore tokens, PasswordEncoder passwords, AccountMailer mailer,
-            JwtService jwt, RateLimiter rateLimiter, AuthProperties properties) {
+            MailDispatcher mail, JwtService jwt, RateLimiter rateLimiter, AuthProperties properties) {
         this.users = users;
         this.tokens = tokens;
         this.passwords = passwords;
         this.mailer = mailer;
+        this.mail = mail;
         this.jwt = jwt;
         this.rateLimiter = rateLimiter;
         this.properties = properties;
@@ -56,9 +58,15 @@ public class AuthService {
         users.markVerified(stored.userId());
     }
 
-    /** Always succeeds silently, so it cannot be used to find out which emails have accounts. */
+    /**
+     * Always succeeds silently, so it cannot be used to find out which emails
+     * have accounts. Over the limit, nothing is sent and nothing is said.
+     */
     @Transactional
-    public void resendVerification(String email) {
+    public void resendVerification(String email, String ip) {
+        if (!rateLimiter.tryAcquire(RateLimiter.ACCOUNT_MAIL, ip, email)) {
+            return;
+        }
         users.findByEmail(email).filter(user -> !user.emailVerified()).ifPresent(this::sendVerification);
     }
 
@@ -67,10 +75,14 @@ public class AuthService {
      * accounts, which use it to add a password. Silent either way.
      */
     @Transactional
-    public void forgotPassword(String email) {
+    public void forgotPassword(String email, String ip) {
+        if (!rateLimiter.tryAcquire(RateLimiter.ACCOUNT_MAIL, ip, email)) {
+            return;
+        }
         users.findByEmail(email).ifPresent(user -> {
             String token = tokens.issue(user.id(), TokenType.RESET_PASSWORD, RESET_TTL, null);
-            mailer.sendPasswordReset(user.email(), properties.baseUrl() + "/reset-password?token=" + token);
+            String link = properties.baseUrl() + "/reset-password?token=" + token;
+            mail.send(() -> mailer.sendPasswordReset(user.email(), link));
         });
     }
 
@@ -148,6 +160,7 @@ public class AuthService {
 
     private void sendVerification(User user) {
         String token = tokens.issue(user.id(), TokenType.VERIFY_EMAIL, VERIFICATION_TTL, null);
-        mailer.sendVerification(user.email(), properties.baseUrl() + "/verify-email?token=" + token);
+        String link = properties.baseUrl() + "/verify-email?token=" + token;
+        mail.send(() -> mailer.sendVerification(user.email(), link));
     }
 }

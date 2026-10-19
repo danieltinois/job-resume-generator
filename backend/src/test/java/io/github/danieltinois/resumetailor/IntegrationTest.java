@@ -55,6 +55,6 @@ public abstract class IntegrationTest {
     @BeforeEach
     void wipeUserData() {
         jdbc.sql("TRUNCATE users CASCADE").update();
-        mailer.sent.clear();
+        mailer.reset();
     }
 }

@@ -74,14 +74,14 @@ public class AuthController {
 
     @PostMapping("/resend-verification")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void resendVerification(@Valid @RequestBody EmailRequest request) {
-        auth.resendVerification(request.email());
+    public void resendVerification(@Valid @RequestBody EmailRequest request, HttpServletRequest http) {
+        auth.resendVerification(request.email(), http.getRemoteAddr());
     }
 
     @PostMapping("/forgot-password")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void forgotPassword(@Valid @RequestBody EmailRequest request) {
-        auth.forgotPassword(request.email());
+    public void forgotPassword(@Valid @RequestBody EmailRequest request, HttpServletRequest http) {
+        auth.forgotPassword(request.email(), http.getRemoteAddr());
     }
 
     @PostMapping("/reset-password")

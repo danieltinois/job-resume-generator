@@ -45,7 +45,26 @@ class PasswordResetTest extends IntegrationTest {
     void forgotPasswordNeverRevealsAccounts() throws Exception {
         forgot("nobody@example.com").andExpect(status().isNoContent());
 
-        assertThat(mailer.sent).isEmpty();
+        mailer.assertSentExactly(0);
+    }
+
+    @Test
+    void mailFailureDoesNotRevealTheAccount() throws Exception {
+        users.create(email, passwords.encode("old-password"), "Alex", true);
+        mailer.failing = true;
+
+        forgot(email).andExpect(status().isNoContent());
+    }
+
+    @Test
+    void forgotPasswordIsRateLimitedSilently() throws Exception {
+        users.create(email, passwords.encode("old-password"), "Alex", true);
+
+        for (int i = 0; i < 5; i++) {
+            forgot(email).andExpect(status().isNoContent());
+        }
+
+        mailer.assertSentExactly(3);
     }
 
     @Test
