@@ -71,6 +71,13 @@ public class TokenStore {
         jdbc.sql("UPDATE auth_tokens SET used_at = now() WHERE family = ? AND used_at IS NULL").param(family).update();
     }
 
+    /** Invalidates every unused token of one kind for a user, e.g. all sessions after a password reset. */
+    public void revokeAll(UUID userId, TokenType type) {
+        jdbc.sql("UPDATE auth_tokens SET used_at = now() WHERE user_id = ? AND type = ? AND used_at IS NULL")
+                .params(userId, type.name())
+                .update();
+    }
+
     static String hash(String raw) {
         try {
             byte[] digest = MessageDigest.getInstance("SHA-256").digest(raw.getBytes(StandardCharsets.UTF_8));

@@ -39,6 +39,9 @@ public class AuthController {
     public record EmailRequest(@NotBlank String email) {
     }
 
+    public record ResetRequest(@NotBlank String token, @NotBlank @Size(min = 8, max = 128) String password) {
+    }
+
     public record AccessToken(String accessToken) {
     }
 
@@ -66,6 +69,18 @@ public class AuthController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void resendVerification(@Valid @RequestBody EmailRequest request) {
         auth.resendVerification(request.email());
+    }
+
+    @PostMapping("/forgot-password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void forgotPassword(@Valid @RequestBody EmailRequest request) {
+        auth.forgotPassword(request.email());
+    }
+
+    @PostMapping("/reset-password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void resetPassword(@Valid @RequestBody ResetRequest request) {
+        auth.resetPassword(request.token(), request.password());
     }
 
     @PostMapping("/login")

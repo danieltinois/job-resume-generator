@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthService {
 
     static final Duration VERIFICATION_TTL = Duration.ofHours(24);
+    static final Duration RESET_TTL = Duration.ofHours(1);
 
     /** Tokens issued by a successful sign-in. */
     public record Session(String accessToken, String refreshToken) {
@@ -59,6 +60,32 @@ public class AuthService {
     @Transactional
     public void resendVerification(String email) {
         users.findByEmail(email).filter(user -> !user.emailVerified()).ifPresent(this::sendVerification);
+    }
+
+    /**
+     * Sends a reset link when the account exists, including Google-only
+     * accounts, which use it to add a password. Silent either way.
+     */
+    @Transactional
+    public void forgotPassword(String email) {
+        users.findByEmail(email).ifPresent(user -> {
+            String token = tokens.issue(user.id(), TokenType.RESET_PASSWORD, RESET_TTL, null);
+            mailer.sendPasswordReset(user.email(), properties.baseUrl() + "/reset-password?token=" + token);
+        });
+    }
+
+    /**
+     * Sets the new password and signs the user out everywhere. Opening the
+     * link proves the user owns the email, so it also counts as verification.
+     */
+    @Transactional
+    public void resetPassword(String token, String password) {
+        TokenStore.StoredToken stored = tokens.consume(token, TokenType.RESET_PASSWORD)
+                .orElseThrow(AuthException::invalidLink);
+        users.setPassword(stored.userId(), passwords.encode(password));
+        users.markVerified(stored.userId());
+        tokens.revokeAll(stored.userId(), TokenType.REFRESH);
+        tokens.revokeAll(stored.userId(), TokenType.RESET_PASSWORD);
     }
 
     public Session login(String email, String password, String ip) {
