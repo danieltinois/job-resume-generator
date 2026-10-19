@@ -42,6 +42,10 @@ public class ResumeAssembler {
         }
 
         AssembledResume build(Selection selection) {
+            rejectDuplicates(selection.experienceOrder());
+            selection.achievements().values().forEach(Run::rejectDuplicates);
+            rejectDuplicates(selection.projects());
+            selection.skillOrder().values().forEach(Run::rejectDuplicates);
             var personal = profile.personal();
             ResumeDocument document = new ResumeDocument(
                     language.name().toLowerCase(),
@@ -161,6 +165,16 @@ public class ResumeAssembler {
                 warnings.add(path + ": no EN text, PT used");
             }
             return text.in(language);
+        }
+
+        /** The same item twice would print twice: a selection lists each id at most once. */
+        private static void rejectDuplicates(List<String> ids) {
+            java.util.Set<String> seen = new java.util.HashSet<>();
+            for (String id : ids) {
+                if (!seen.add(id)) {
+                    throw new UnknownSelectionIdException(id, "which is listed more than once");
+                }
+            }
         }
 
         private static <T> Map<String, T> index(List<T> items, Function<T, String> id) {

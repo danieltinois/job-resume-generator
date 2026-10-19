@@ -12,7 +12,7 @@ public final class Periods {
             "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
     private static final List<String> MONTHS_PT = List.of(
             "jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez");
-    private static final Pattern MONTH = Pattern.compile("\\d{4}-\\d{2}");
+    private static final Pattern MONTH = Pattern.compile("\\d{4}-(0[1-9]|1[0-2])");
 
     private Periods() {
     }

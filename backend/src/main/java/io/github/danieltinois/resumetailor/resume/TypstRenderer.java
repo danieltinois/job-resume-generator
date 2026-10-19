@@ -103,7 +103,7 @@ public class TypstRenderer implements AutoCloseable {
                 throw new RenderException("typst timed out after " + properties.timeout());
             }
         } catch (InterruptedException e) {
-            process.destroyForcibly();
+            killAndWait(process);
             Thread.currentThread().interrupt();
             throw new RenderException("Interrupted while rendering", e);
         }
@@ -113,6 +113,16 @@ public class TypstRenderer implements AutoCloseable {
             throw new RenderException("typst failed with exit code " + process.exitValue());
         }
         return Files.readAllBytes(dir.resolve("out.pdf"));
+    }
+
+    /** Gives a killed Typst a moment to exit, so its directory is not deleted while it still writes. */
+    private static void killAndWait(Process process) {
+        process.destroyForcibly();
+        try {
+            process.waitFor(5, TimeUnit.SECONDS);
+        } catch (InterruptedException ignored) {
+            // Already interrupted: the caller restores the flag.
+        }
     }
 
     private static Path extract(String resource, Path target) throws IOException {

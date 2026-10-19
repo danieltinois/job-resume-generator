@@ -47,6 +47,11 @@ class TextNormalizerTest {
     }
 
     @Test
+    void containsTermReusesCompiledPatterns() {
+        assertThat(TextNormalizer.pattern("kafka")).isSameAs(TextNormalizer.pattern("kafka"));
+    }
+
+    @Test
     void appearsInIgnoresAccentsOnBothSides() {
         assertThat(appearsIn("Automação", normalize("automacao de testes"))).isTrue();
         assertThat(appearsIn("Automacao", normalize("Automação de testes"))).isTrue();

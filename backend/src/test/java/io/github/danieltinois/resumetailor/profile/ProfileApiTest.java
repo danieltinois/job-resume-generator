@@ -100,6 +100,21 @@ class ProfileApiTest extends IntegrationTest {
     }
 
     @Test
+    void nullListElementIs422() throws Exception {
+        save(alex, 0, example().replace("\"skills\": [\"Python\", \"SQL\", \"Bash\"]",
+                "\"skills\": [\"Python\", null, \"Bash\"]"))
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.errors[0].path").value("skillCategories[0].skills[1]"));
+    }
+
+    @Test
+    void nullExperienceIs422() throws Exception {
+        save(alex, 0, example().replace("\"experiences\": [", "\"experiences\": [null, "))
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.errors[0].path").value("experiences[0]"));
+    }
+
+    @Test
     void importConvertsLegacyYaml() throws Exception {
         MockMultipartFile file = new MockMultipartFile("file", "profile.yaml", "application/yaml",
                 Fixtures.text("legacy-profile.yaml").getBytes(StandardCharsets.UTF_8));

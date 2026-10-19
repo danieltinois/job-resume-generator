@@ -1,8 +1,11 @@
 package io.github.danieltinois.resumetailor.matching;
 
 import java.text.Normalizer;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -17,6 +20,16 @@ public final class TextNormalizer {
 
     /** Keeps {@code + # . /} so "c++", "c#", "node.js" and "ci/cd" survive. */
     private static final Pattern SEPARATORS = Pattern.compile("[^a-z0-9+#./]+");
+
+    /** Every analysis tests skills × sections; terms repeat, so their patterns are cached (bounded LRU). */
+    private static final int MAX_CACHED_PATTERNS = 10_000;
+    private static final Map<String, Pattern> PATTERNS = Collections.synchronizedMap(
+            new LinkedHashMap<>(256, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<String, Pattern> eldest) {
+                    return size() > MAX_CACHED_PATTERNS;
+                }
+            });
 
     private TextNormalizer() {
     }
@@ -53,9 +66,12 @@ public final class TextNormalizer {
      * so the boundaries are explicit lookarounds.
      */
     public static boolean containsTerm(String normalizedText, String normalizedTerm) {
-        return Pattern.compile("(?<![a-z0-9])" + Pattern.quote(normalizedTerm) + "(?![a-z0-9])")
-                .matcher(normalizedText)
-                .find();
+        return pattern(normalizedTerm).matcher(normalizedText).find();
+    }
+
+    static Pattern pattern(String normalizedTerm) {
+        return PATTERNS.computeIfAbsent(normalizedTerm,
+                term -> Pattern.compile("(?<![a-z0-9])" + Pattern.quote(term) + "(?![a-z0-9])"));
     }
 
     /** Is {@code skill} present, in any of its forms, in the already-normalized text? */

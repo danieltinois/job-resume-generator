@@ -96,6 +96,23 @@ class ResumeAssemblerTest {
     }
 
     @Test
+    void duplicateIdsAreRejected() {
+        assertThatThrownBy(() -> assembler.assemble(PROFILE, new Selection(
+                List.of("exp_20000000", "exp_20000000"), Map.of(), List.of(), Map.of()), Language.PT))
+                .isInstanceOf(UnknownSelectionIdException.class).hasMessageContaining("exp_20000000");
+        assertThatThrownBy(() -> assembler.assemble(PROFILE, new Selection(
+                List.of("exp_20000000"), Map.of("exp_20000000", List.of("h-a", "h-a")), List.of(), Map.of()),
+                Language.PT))
+                .isInstanceOf(UnknownSelectionIdException.class).hasMessageContaining("h-a");
+        assertThatThrownBy(() -> assembler.assemble(PROFILE, new Selection(
+                List.of(), Map.of(), List.of("prj_keep0000", "prj_keep0000"), Map.of()), Language.PT))
+                .isInstanceOf(UnknownSelectionIdException.class).hasMessageContaining("prj_keep0000");
+        assertThatThrownBy(() -> assembler.assemble(PROFILE, new Selection(
+                List.of(), Map.of(), List.of(), Map.of("cat_00000001", List.of("AWS", "AWS"))), Language.PT))
+                .isInstanceOf(UnknownSelectionIdException.class).hasMessageContaining("AWS");
+    }
+
+    @Test
     void skillNotInItsCategoryIsRejected() {
         Selection selection = new Selection(List.of(), Map.of(), List.of(),
                 Map.of("cat_00000001", List.of("Python", "Haskell")));

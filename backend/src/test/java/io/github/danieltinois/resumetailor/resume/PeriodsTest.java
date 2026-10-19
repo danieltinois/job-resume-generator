@@ -17,6 +17,8 @@ class PeriodsTest {
             "2025-01, null, PT, jan 2025 – Atual",
             "2020-03, 2022-11, PT, mar 2020 – nov 2022",
             "null, 2019-07, EN, Jul 2019",
+            "2023-13, null, EN, 2023-13 – Present",
+            "2023-00, 2024-01, PT, 2023-00 – jan 2024",
     })
     void formats(String start, String end, Language language, String expected) {
         assertThat(Periods.format(start, end, language)).isEqualTo(expected);
