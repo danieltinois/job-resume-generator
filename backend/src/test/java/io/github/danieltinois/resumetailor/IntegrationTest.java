@@ -10,6 +10,9 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
+import io.github.danieltinois.resumetailor.auth.JwtService;
+import io.github.danieltinois.resumetailor.auth.UserRepository;
+
 /**
  * Base for tests that need the database and the HTTP layer. One PostgreSQL
  * container serves the whole run; user data is wiped before each test.
@@ -37,6 +40,17 @@ public abstract class IntegrationTest {
 
     @Autowired
     protected RecordingMailer mailer;
+
+    @Autowired
+    private UserRepository users;
+
+    @Autowired
+    private JwtService jwt;
+
+    /** Creates a verified account and returns an {@code Authorization} header value for it. */
+    protected String signedIn(String email) {
+        return "Bearer " + jwt.issue(users.create(email, null, "Alex Fictitious", true).id());
+    }
 
     @BeforeEach
     void wipeUserData() {

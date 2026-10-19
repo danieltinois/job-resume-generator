@@ -17,6 +17,8 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import io.github.danieltinois.resumetailor.auth.AuthException;
+import io.github.danieltinois.resumetailor.profile.ProfileValidationException;
+import io.github.danieltinois.resumetailor.profile.VersionConflictException;
 
 /**
  * Every error leaves as an RFC 7807 problem. Validation errors list the
@@ -47,6 +49,24 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(AuthException.class)
     ProblemDetail auth(AuthException e) {
         return ProblemDetail.forStatusAndDetail(e.status(), e.getMessage());
+    }
+
+    @ExceptionHandler(ProfileValidationException.class)
+    ProblemDetail invalidProfile(ProfileValidationException e) {
+        return validation(e.violations().stream()
+                .map(violation -> Map.of("path", violation.path(), "message", violation.message()))
+                .toList());
+    }
+
+    @ExceptionHandler(VersionConflictException.class)
+    ProblemDetail conflict(VersionConflictException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
+    }
+
+    /** Bad input that a parser rejected, e.g. an invalid YAML import. */
+    @ExceptionHandler(IllegalArgumentException.class)
+    ProblemDetail invalidInput(IllegalArgumentException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_CONTENT, e.getMessage());
     }
 
     @ExceptionHandler(Exception.class)

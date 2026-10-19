@@ -5,6 +5,11 @@ spring:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/resume}
     username: ${DATABASE_USERNAME:resume}
     password: ${DATABASE_PASSWORD:resume}
+  servlet:
+    multipart:
+      # Legacy profile.yaml imports are a few KB.
+      max-file-size: 256KB
+      max-request-size: 300KB
   mail:
     host: ${SMTP_HOST:localhost}
     port: ${SMTP_PORT:1025}
