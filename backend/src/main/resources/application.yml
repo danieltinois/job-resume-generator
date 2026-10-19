@@ -1,3 +1,10 @@
 spring:
   application:
     name: resume-tailor
+
+resume:
+  typst:
+    binary: typst
+    timeout: 10s
+    # 0 = one render per CPU
+    max-concurrent: 0
