@@ -79,6 +79,16 @@ class RegistrationTest extends IntegrationTest {
     }
 
     @Test
+    void passwordOverBcryptLimitIs422() throws Exception {
+        register("alex@example.com", "a".repeat(73)).andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.errors[0].path").value("password"));
+        // 40 accented characters are 80 UTF-8 bytes, although only 40 characters.
+        register("alex@example.com", "é".repeat(40)).andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.errors[0].path").value("password"));
+        register("alex@example.com", "a".repeat(72)).andExpect(status().isCreated());
+    }
+
+    @Test
     void invalidEmailIs422() throws Exception {
         register("not-an-email", "correct-horse").andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.errors[0].path").value("email"));

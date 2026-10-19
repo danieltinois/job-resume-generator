@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.github.danieltinois.resumetailor.common.MaxBytes;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -21,8 +23,12 @@ import jakarta.validation.constraints.Size;
 @RequestMapping("/api/auth")
 public class AuthController {
 
+    /** BCrypt's input limit. */
+    static final int PASSWORD_MAX_BYTES = 72;
+
     public record RegisterRequest(@NotBlank @Email @Size(max = 254) String email,
-            @NotBlank @Size(min = 8, max = 128) String password, @NotBlank @Size(max = 100) String name) {
+            @NotBlank @Size(min = 8) @MaxBytes(PASSWORD_MAX_BYTES) String password,
+            @NotBlank @Size(max = 100) String name) {
 
         /** Pasted addresses often carry spaces; they must not fail validation. */
         public RegisterRequest {
@@ -39,7 +45,8 @@ public class AuthController {
     public record EmailRequest(@NotBlank String email) {
     }
 
-    public record ResetRequest(@NotBlank String token, @NotBlank @Size(min = 8, max = 128) String password) {
+    public record ResetRequest(@NotBlank String token,
+            @NotBlank @Size(min = 8) @MaxBytes(PASSWORD_MAX_BYTES) String password) {
     }
 
     public record AccessToken(String accessToken) {

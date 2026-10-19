@@ -124,6 +124,12 @@ class PasswordResetTest extends IntegrationTest {
     }
 
     @Test
+    void newPasswordOverBcryptLimitIs422() throws Exception {
+        reset("whatever", "é".repeat(40)).andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.errors[0].path").value("password"));
+    }
+
+    @Test
     void weakNewPasswordIs422() throws Exception {
         reset("whatever", "short").andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.errors[0].path").value("password"));

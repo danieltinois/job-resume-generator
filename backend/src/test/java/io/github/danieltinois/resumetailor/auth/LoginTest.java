@@ -81,6 +81,13 @@ class LoginTest extends IntegrationTest {
     }
 
     @Test
+    void overlongPasswordIsAPlainFailure() throws Exception {
+        account("long@example.com", true);
+
+        login("long@example.com", "é".repeat(60)).andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void unverifiedOnlyRevealedAfterCorrectPassword() throws Exception {
         account("new@example.com", false);
 
