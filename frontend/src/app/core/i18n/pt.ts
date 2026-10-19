@@ -122,6 +122,19 @@ export const pt = {
   'newJob.help': 'Cole a descrição completa da vaga, em português ou inglês.',
   'newJob.description': 'Descrição da vaga',
   'newJob.submit': 'Analisar vaga',
+  'review.language': 'Idioma do currículo',
+  'review.matched': 'Skills que batem com a vaga',
+  'review.noneMatched': 'Nenhuma skill do perfil aparece na vaga.',
+  'review.missing': 'Pedidas na vaga, ausentes no perfil',
+  'review.missingHelp': 'Adicione ao perfil só as que você realmente tem.',
+  'review.warnings': 'Textos sem inglês (usando o português):',
+  'review.restore': 'Restaurar sugestão',
+  'review.score': 'Pontuação de relevância',
+  'review.save': 'Salvar currículo',
+  'review.saved': 'Currículo salvo.',
+  'review.preview': 'Prévia do currículo',
+  'review.previewLoading': 'Gerando prévia…',
+  'review.previewFailed': 'Não foi possível gerar a prévia desta seleção.',
 } as const;
 
 export type TranslationKey = keyof typeof pt;
