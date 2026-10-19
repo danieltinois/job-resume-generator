@@ -8,6 +8,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
@@ -21,6 +25,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 
 @Import(ApiExceptionHandlerTest.Endpoints.class)
+@ExtendWith(OutputCaptureExtension.class)
 class ApiExceptionHandlerTest extends IntegrationTest {
 
     record Body(@NotBlank String name) {
@@ -43,6 +48,11 @@ class ApiExceptionHandlerTest extends IntegrationTest {
         @GetMapping("/api/test/bad-argument")
         Body badArgument() {
             throw new IllegalArgumentException("secret internal detail");
+        }
+
+        @GetMapping("/api/test/duplicate")
+        Body duplicate() {
+            throw new DuplicateKeyException("Key (email)=(alex@example.com) already exists");
         }
 
         @GetMapping("/api/test/missing")
@@ -78,6 +88,15 @@ class ApiExceptionHandlerTest extends IntegrationTest {
         mvc.perform(get("/api/test/bad-argument").with(jwt()))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.detail").value("Unexpected error"));
+    }
+
+    @Test
+    void concurrentDuplicateIs409WithoutLoggingTheKey(CapturedOutput output) throws Exception {
+        mvc.perform(get("/api/test/duplicate").with(jwt()))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.detail").value("This was changed at the same time elsewhere, try again"));
+
+        org.assertj.core.api.Assertions.assertThat(output).doesNotContain("alex@example.com");
     }
 
     @Test

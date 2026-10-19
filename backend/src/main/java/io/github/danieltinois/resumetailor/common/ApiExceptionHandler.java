@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -73,6 +74,17 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(InvalidImportException.class)
     ProblemDetail invalidImport(InvalidImportException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_CONTENT, e.getMessage());
+    }
+
+    /**
+     * Two requests creating the same thing at once (e.g. two registrations of
+     * one email). Not logged: PostgreSQL's message names the conflicting
+     * value, which may be an email address.
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    ProblemDetail concurrentDuplicate(DataIntegrityViolationException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT,
+                "This was changed at the same time elsewhere, try again");
     }
 
     @ExceptionHandler(Exception.class)
