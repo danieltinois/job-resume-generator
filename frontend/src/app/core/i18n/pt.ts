@@ -157,6 +157,17 @@ export const pt = {
   'shortcuts.help': 'Mostrar os atalhos de teclado',
   'shortcuts.save': 'Salvar agora',
   'common.close': 'Fechar',
+  'nav.newJob': 'Nova vaga',
+  'nav.menu': 'Menu de navegação',
+  'nav.shortcuts': 'Atalhos de teclado',
+  'theme.label': 'Tema',
+  'theme.light': 'Claro',
+  'theme.dark': 'Escuro',
+  'theme.system': 'Sistema',
+  'auth.brand.promise': 'Um perfil. Um currículo sob medida para cada vaga.',
+  'auth.brand.profile': 'Mantenha sua experiência em um perfil bilíngue.',
+  'auth.brand.match': 'Cole uma vaga e veja quais competências combinam.',
+  'auth.brand.facts': 'Baixe um PDF feito só com fatos que você escreveu.',
 } as const;
 
 export type TranslationKey = keyof typeof pt;

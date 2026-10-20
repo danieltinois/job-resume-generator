@@ -48,7 +48,8 @@ test('registers, imports a profile, tailors a resume and downloads the PDF', asy
 
   await test.step('analyze a job', async () => {
     await page.getByRole('link', { name: 'Jobs' }).first().click();
-    await page.getByRole('link', { name: 'New job' }).click();
+    // The sidebar and the dashboard both offer it.
+    await page.getByRole('link', { name: 'New job' }).first().click();
     await page.getByLabel('Job description').fill(await readFile(fixture('jobs/example.md'), 'utf8'));
     await page.getByRole('button', { name: 'Analyze job' }).click();
 
@@ -75,9 +76,13 @@ test('registers, imports a profile, tailors a resume and downloads the PDF', asy
   });
 
   await test.step('sign out', async () => {
-    await page.getByRole('button', { name: 'Sign out' }).click();
-    // Signed out once the server has ended the session and the toolbar shows it.
-    await expect(page.getByRole('button', { name: 'Sign out' })).toBeHidden();
+    await page.getByRole('button', { name: 'Ada Example' }).click();
+    // The app leaves the page first and then ends the session, so wait for the server to end it.
+    const loggedOut = page.waitForResponse((response) => response.url().endsWith('/api/auth/logout'));
+    await page.getByRole('menuitem', { name: 'Sign out' }).click();
+    await loggedOut;
+    await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Ada Example' })).toBeHidden();
     await page.goto('/profile');
     await expect(page).toHaveURL(/\/login/);
   });

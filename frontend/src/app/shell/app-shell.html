@@ -1,0 +1,65 @@
+<mat-sidenav-container class="container" [class.rail]="rail()">
+  <mat-sidenav #drawer class="sidebar" fixedInViewport [mode]="phone() ? 'over' : 'side'" [opened]="!phone()">
+    <div class="sidebar-inner">
+      <div class="brand">
+        <span class="mark" aria-hidden="true">RT</span>
+        <span class="brand-name" [class.visually-hidden]="rail()">Resume Tailor</span>
+      </div>
+
+      <a
+        mat-flat-button
+        class="new-job"
+        routerLink="/jobs/new"
+        [attr.aria-label]="rail() ? i18n.t('nav.newJob') : null"
+        [matTooltip]="i18n.t('nav.newJob')"
+        [matTooltipDisabled]="!rail()"
+        matTooltipPosition="right"
+        (click)="chosen()"
+      >
+        <mat-icon aria-hidden="true">add</mat-icon>
+        <span [class.visually-hidden]="rail()">{{ i18n.t('nav.newJob') }}</span>
+      </a>
+
+      <nav class="nav">
+        @for (item of items; track item.path) {
+          <a
+            class="nav-item"
+            [routerLink]="item.path"
+            routerLinkActive="active"
+            ariaCurrentWhenActive="page"
+            [routerLinkActiveOptions]="{ exact: item.exact }"
+            [attr.aria-label]="rail() ? i18n.t(item.label) : null"
+            [matTooltip]="i18n.t(item.label)"
+            [matTooltipDisabled]="!rail()"
+            matTooltipPosition="right"
+            (click)="chosen()"
+          >
+            <mat-icon aria-hidden="true">{{ item.icon }}</mat-icon>
+            <span class="label" [class.visually-hidden]="rail()">{{ i18n.t(item.label) }}</span>
+          </a>
+        }
+      </nav>
+
+      <app-user-menu class="user" [compact]="rail()" />
+    </div>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="main-column">
+    @if (phone()) {
+      <header class="topbar">
+        <button
+          mat-icon-button
+          type="button"
+          data-test="open-nav"
+          [attr.aria-label]="i18n.t('nav.menu')"
+          (click)="drawer.open()"
+        >
+          <mat-icon aria-hidden="true">menu</mat-icon>
+        </button>
+        <span class="mark" aria-hidden="true">RT</span>
+        <span class="brand-name">Resume Tailor</span>
+      </header>
+    }
+    <main class="content"><router-outlet /></main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

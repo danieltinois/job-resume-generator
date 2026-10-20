@@ -1,0 +1,150 @@
+@use '@angular/material' as mat;
+
+:host {
+  display: block;
+  min-height: 100vh;
+
+  @include mat.sidenav-overrides(
+    (
+      container-shape: 0,
+      container-width: 240px,
+      container-background-color: var(--app-surface),
+      container-text-color: var(--app-text),
+      container-divider-color: var(--app-border),
+      content-background-color: var(--app-bg),
+      content-text-color: var(--app-text),
+    )
+  );
+}
+
+// The window scrolls, not the container: sticky elements on the pages stay sticky.
+.container,
+.main-column {
+  overflow: visible;
+}
+
+.container {
+  min-height: 100vh;
+}
+
+.sidebar-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
+  height: 100%;
+  padding: 16px 12px;
+}
+
+.brand,
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand {
+  height: 40px;
+  padding: 0 4px;
+}
+
+.mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--app-accent);
+  color: var(--app-on-accent);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.brand-name {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.new-job {
+  width: 100%;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 8px;
+  color: var(--app-muted);
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+
+  &:hover {
+    background: var(--app-subtle);
+    color: var(--app-text);
+  }
+
+  &.active {
+    background: var(--app-accent-soft);
+    color: var(--app-on-accent-soft);
+  }
+
+  mat-icon {
+    flex: none;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.user {
+  margin-top: auto;
+}
+
+// 768–1023 px: a 64 px icon rail.
+.rail {
+  .sidebar {
+    width: 64px;
+  }
+
+  .brand,
+  .nav-item {
+    justify-content: center;
+    padding: 0;
+  }
+
+  .new-job {
+    min-width: 0;
+    padding: 0;
+
+    mat-icon {
+      margin: 0;
+    }
+  }
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  height: 56px;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--app-border);
+  background: var(--app-surface);
+}
+
+.content {
+  display: block;
+  padding: 16px;
+}

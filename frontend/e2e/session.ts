@@ -39,7 +39,7 @@ export async function signInWithProfile(page: Page): Promise<{ reviewUrl: string
   await expect(page.locator('[data-test=save-status]')).toHaveText('Saved');
 
   await page.getByRole('link', { name: 'Jobs' }).first().click();
-  await page.getByRole('link', { name: 'New job' }).click();
+  await page.getByRole('link', { name: 'New job' }).first().click();
   await page.getByLabel('Job description').fill(await readFile(fixture('jobs/example.md'), 'utf8'));
   await page.getByRole('button', { name: 'Analyze job' }).click();
   await expect(page).toHaveURL(/\/jobs\/[^/]+\/review$/);
