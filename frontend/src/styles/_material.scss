@@ -1,0 +1,140 @@
+// Angular Material (M3) configured to look like the app: emerald primary, zinc neutrals, Inter.
+// The palettes come from `ng generate @angular/material:theme-color` and are never edited by hand.
+@use '@angular/material' as mat;
+@use './theme-colors';
+
+// Shadow for overlays only (menus and dialogs); everything else is separated by borders.
+$overlay-shadow:
+  0 8px 24px rgba(0, 0, 0, 0.14),
+  0 2px 6px rgba(0, 0, 0, 0.08);
+
+html {
+  @include mat.theme(
+    (
+      color: (
+        primary: theme-colors.$primary-palette,
+        tertiary: theme-colors.$tertiary-palette,
+      ),
+      typography: (
+        plain-family: (
+          Inter,
+          system-ui,
+          sans-serif,
+        ),
+        brand-family: (
+          Inter,
+          system-ui,
+          sans-serif,
+        ),
+        bold-weight: 600,
+        medium-weight: 500,
+        regular-weight: 400,
+      ),
+      density: -1,
+    )
+  );
+
+  // Point Material's system colours at our tokens so Material components and our own markup
+  // can never drift apart.
+  @include mat.theme-overrides(
+    (
+      surface: var(--app-surface),
+      surface-bright: var(--app-surface),
+      surface-dim: var(--app-bg),
+      surface-container-lowest: var(--app-surface),
+      surface-container-low: var(--app-surface),
+      surface-container: var(--app-surface),
+      surface-container-high: var(--app-surface),
+      surface-container-highest: var(--app-subtle),
+      surface-variant: var(--app-subtle),
+      background: var(--app-bg),
+      on-surface: var(--app-text),
+      on-background: var(--app-text),
+      on-surface-variant: var(--app-muted),
+      outline: var(--app-border-strong),
+      outline-variant: var(--app-border),
+      primary: var(--app-accent),
+      on-primary: var(--app-on-accent),
+      primary-container: var(--app-accent-soft),
+      on-primary-container: var(--app-on-accent-soft),
+      secondary-container: var(--app-accent-soft),
+      on-secondary-container: var(--app-on-accent-soft),
+      error: var(--app-danger),
+    )
+  );
+
+  // Outlined form fields, 8 px radius.
+  @include mat.form-field-overrides(
+    (
+      outlined-container-shape: 8px,
+    )
+  );
+
+  // Flat buttons: no elevation, 8 px radius, 40 px high.
+  @include mat.button-overrides(
+    (
+      filled-container-shape: 8px,
+      filled-container-height: 40px,
+      outlined-container-shape: 8px,
+      outlined-container-height: 40px,
+      outlined-outline-color: var(--app-border-strong),
+      protected-container-shape: 8px,
+      protected-container-height: 40px,
+      protected-container-color: var(--app-surface),
+      protected-container-elevation-shadow: none,
+      protected-hover-container-elevation-shadow: none,
+      protected-focus-container-elevation-shadow: none,
+      protected-pressed-container-elevation-shadow: none,
+      text-container-shape: 8px,
+      text-container-height: 40px,
+      tonal-container-shape: 8px,
+      tonal-container-height: 40px,
+    )
+  );
+
+  // Outlined cards: a 1 px border instead of a shadow, 12 px radius.
+  @include mat.card-overrides(
+    (
+      outlined-container-shape: 12px,
+      outlined-container-color: var(--app-surface),
+      outlined-outline-color: var(--app-border),
+      elevated-container-shape: 12px,
+      elevated-container-color: var(--app-surface),
+      elevated-container-elevation: none,
+    )
+  );
+
+  // Chips in the soft accent, fully rounded.
+  @include mat.chips-overrides(
+    (
+      container-shape-radius: 999px,
+      outline-color: var(--app-border),
+      elevated-selected-container-color: var(--app-accent-soft),
+      selected-label-text-color: var(--app-on-accent-soft),
+      label-text-color: var(--app-text),
+    )
+  );
+
+  // A muted ripple.
+  @include mat.ripple-overrides(
+    (
+      color: color-mix(in srgb, var(--app-text) 6%, transparent),
+    )
+  );
+
+  // Overlays: 12 px radius and the only shadow in the app.
+  @include mat.menu-overrides(
+    (
+      container-shape: 12px,
+      container-color: var(--app-surface),
+      container-elevation-shadow: $overlay-shadow,
+    )
+  );
+  @include mat.dialog-overrides(
+    (
+      container-shape: 12px,
+      container-color: var(--app-surface),
+      container-elevation-shadow: $overlay-shadow,
+    )
+  );
+}

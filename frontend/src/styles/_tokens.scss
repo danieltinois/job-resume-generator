@@ -1,0 +1,40 @@
+// Design tokens: the single source of truth for colour. Each is defined once with `light-dark()`,
+// so switching `color-scheme` on <html> switches the whole app. Material's system variables are
+// pointed at these in `_material.scss`.
+:root {
+  // Follow the system by default. The Theme service overrides it on <html> for an explicit choice.
+  color-scheme: light dark;
+
+  --app-bg: light-dark(#fafafa, #09090b);
+  --app-surface: light-dark(#ffffff, #18181b);
+  --app-subtle: light-dark(#f4f4f5, #232327);
+  --app-border: light-dark(#e4e4e7, #2e2e33);
+  --app-border-strong: light-dark(#a1a1aa, #52525b);
+  --app-text: light-dark(#18181b, #fafafa);
+  --app-muted: light-dark(#71717a, #a1a1aa);
+  --app-accent: light-dark(#047857, #34d399);
+  --app-on-accent: light-dark(#ffffff, #022c22);
+  --app-accent-soft: light-dark(#ecfdf5, #0b2a20);
+  --app-on-accent-soft: light-dark(#065f46, #6ee7b7);
+  --app-warn-soft: light-dark(#fffbeb, #2a1f05);
+  --app-on-warn-soft: light-dark(#92400e, #fcd34d);
+  --app-danger: light-dark(#b91c1c, #f87171);
+}
+
+// One focus ring for every interactive element: 2 px accent outline, 2 px offset.
+:focus-visible {
+  outline: 2px solid var(--app-accent);
+  outline-offset: 2px;
+}
+
+// 150 ms ease on colour, background and opacity; none at all when the user asks for less motion.
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
