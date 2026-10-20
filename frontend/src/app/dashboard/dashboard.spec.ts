@@ -1,8 +1,10 @@
+import { OverlayContainer } from '@angular/cdk/overlay';
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { AuthStore } from '../core/auth/auth-store';
 import example from '../../testing/profile-example.json';
 import { apiTestProviders } from '../auth/testing';
+import { confirmDialogButton, dialogClosed, dialogOverlay } from '../ui/testing';
 import { Dashboard } from './dashboard';
 
 const JOBS = [
@@ -13,6 +15,8 @@ const RESUMES = [{ id: 'r1', jobId: 'j1', language: 'EN', createdAt: '2026-10-19
 
 describe('Dashboard', () => {
   let backend: HttpTestingController;
+
+  afterEach(() => TestBed.inject(OverlayContainer).ngOnDestroy());
 
   async function render(profile: unknown = example) {
     TestBed.configureTestingModule({ imports: [Dashboard], providers: apiTestProviders });
@@ -48,21 +52,27 @@ describe('Dashboard', () => {
 
   it('asks before deleting a job', async () => {
     const fixture = await render();
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(false).mockReturnValueOnce(true);
     const remove = () => fixture.nativeElement.querySelector('[data-test="job"] button[data-test="delete-job"]').click();
 
     remove();
+    const cancel = await confirmDialogButton('cancel');
+    expect(dialogOverlay().textContent).toContain('Delete this job?');
+    expect(dialogOverlay().textContent).toContain('Backend Engineer');
+    cancel.click();
+    await dialogClosed();
     backend.expectNone((request) => request.method === 'DELETE');
 
     remove();
+    (await confirmDialogButton('confirm')).click();
+    await dialogClosed();
     backend.expectOne((request) => request.method === 'DELETE' && request.url === '/api/jobs/j1')
       .flush(null, { status: 204, statusText: 'No Content' });
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(confirm).toHaveBeenCalledTimes(2);
     expect(fixture.nativeElement.querySelectorAll('[data-test="job"]').length).toBe(1);
   });
+
   it('says when the page cannot load and tries again on request', async () => {
     TestBed.configureTestingModule({ imports: [Dashboard], providers: apiTestProviders });
     backend = TestBed.inject(HttpTestingController);

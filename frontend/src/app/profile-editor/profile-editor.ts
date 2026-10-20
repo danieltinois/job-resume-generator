@@ -13,6 +13,7 @@ import { AuthStore } from '../core/auth/auth-store';
 import { downloadBlob } from '../core/download';
 import { fieldError } from '../core/forms/field-error';
 import { I18n } from '../core/i18n/i18n';
+import { ConfirmDialog } from '../ui/confirm-dialog';
 import { Autosave, type ConflictChoice, type SaveStatus } from './autosave';
 import { ConflictDialog } from './conflict-dialog';
 import { ExperienceCard } from './experience-card';
@@ -68,6 +69,7 @@ export class ProfileEditor {
   private readonly auth = inject(AuthStore);
   private readonly destroyRef = inject(DestroyRef);
   private readonly dialog = inject(MatDialog);
+  private readonly confirmDialog = inject(ConfirmDialog);
   private readonly current = signal<Autosave | null>(null);
 
   /** The form, once the profile has loaded. */
@@ -142,7 +144,15 @@ export class ProfileEditor {
     if (this.auth.isSignedIn()) {
       await autosave.flush();
     }
-    return !autosave.hasUnsavedChanges() || window.confirm(this.i18n.t('profile.leave.confirm'));
+    return (
+      !autosave.hasUnsavedChanges() ||
+      this.confirmDialog.confirm({
+        title: this.i18n.t('profile.leave.title'),
+        text: this.i18n.t('profile.leave.confirm'),
+        confirmLabel: this.i18n.t('profile.leave.action'),
+        destructive: true,
+      })
+    );
   }
 
   /** Closing or reloading the tab cannot wait for a save: the browser asks instead. */

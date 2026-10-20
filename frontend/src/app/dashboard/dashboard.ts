@@ -9,6 +9,7 @@ import { firstValueFrom, forkJoin } from 'rxjs';
 import type { JobSummary, ResumeSummary, StoredProfile } from '../core/api/types';
 import { downloadBlob } from '../core/download';
 import { I18n } from '../core/i18n/i18n';
+import { ConfirmDialog } from '../ui/confirm-dialog';
 
 /** Home: every pasted job with the resumes generated for it. */
 @Component({
@@ -114,6 +115,7 @@ import { I18n } from '../core/i18n/i18n';
 export class Dashboard {
   protected readonly i18n = inject(I18n);
   private readonly http = inject(HttpClient);
+  private readonly confirmDialog = inject(ConfirmDialog);
 
   protected readonly jobs = signal<JobSummary[]>([]);
   protected readonly resumes = signal<ResumeSummary[]>([]);
@@ -148,7 +150,13 @@ export class Dashboard {
   }
 
   protected async deleteJob(job: JobSummary): Promise<void> {
-    if (!confirm(this.i18n.t('dashboard.confirmDelete', { title: job.title ?? '' }))) {
+    const confirmed = await this.confirmDialog.confirm({
+      title: this.i18n.t('dashboard.confirmDeleteTitle'),
+      text: this.i18n.t('dashboard.confirmDelete', { title: job.title ?? '' }),
+      confirmLabel: this.i18n.t('common.remove'),
+      destructive: true,
+    });
+    if (!confirmed) {
       return;
     }
     await firstValueFrom(this.http.delete(`/api/jobs/${job.id}`));

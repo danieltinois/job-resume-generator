@@ -1,3 +1,4 @@
+import { OverlayContainer } from '@angular/cdk/overlay';
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
@@ -6,10 +7,13 @@ import type { Profile } from '../core/api/types';
 import { AuthStore } from '../core/auth/auth-store';
 import example from '../../testing/profile-example.json';
 import { apiTestProviders } from '../auth/testing';
+import { dialogOverlay, confirmDialogButton } from '../ui/testing';
 import { ProfileEditor } from './profile-editor';
 
 describe('ProfileEditor', () => {
   let backend: HttpTestingController;
+
+  afterEach(() => TestBed.inject(OverlayContainer).ngOnDestroy());
 
   async function render(profile: Profile = example as Profile) {
     TestBed.configureTestingModule({ imports: [ProfileEditor], providers: apiTestProviders });
@@ -83,24 +87,33 @@ describe('ProfileEditor', () => {
 
   it('asks before leaving edits that cannot be saved', async () => {
     const fixture = await render();
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
     fixture.componentInstance.form()!.controls.personal.controls.name.setValue('');
 
-    expect(await fixture.componentInstance.canLeave()).toBe(false);
+    const leaving = fixture.componentInstance.canLeave();
 
-    expect(confirm).toHaveBeenCalledWith(expect.stringContaining('not saved'));
+    const cancel = await confirmDialogButton('cancel');
+    expect(dialogOverlay().textContent).toContain('not saved');
+    cancel.click();
+    expect(await leaving).toBe(false);
     backend.expectNone((request) => request.method === 'PUT');
-    confirm.mockRestore();
+  });
+
+  it('leaves after the user confirms', async () => {
+    const fixture = await render();
+    fixture.componentInstance.form()!.controls.personal.controls.name.setValue('');
+
+    const leaving = fixture.componentInstance.canLeave();
+
+    (await confirmDialogButton('confirm')).click();
+    expect(await leaving).toBe(true);
   });
 
   it('leaves without asking when everything is saved', async () => {
     const fixture = await render();
-    const confirm = vi.spyOn(window, 'confirm');
 
     expect(await fixture.componentInstance.canLeave()).toBe(true);
 
-    expect(confirm).not.toHaveBeenCalled();
-    confirm.mockRestore();
+    expect(dialogOverlay().querySelector('mat-dialog-container')).toBeNull();
   });
 
   it('warns before closing the tab with unsaved edits', async () => {

@@ -140,6 +140,19 @@ export const pt = {
   'review.preview': 'Prévia do currículo',
   'review.previewLoading': 'Gerando prévia…',
   'review.previewFailed': 'Não foi possível gerar a prévia desta seleção.',
+  'common.confirm': 'Confirmar',
+  'ui.loading': 'Carregando…',
+  'empty.jobs.title': 'Nenhuma vaga ainda',
+  'empty.jobs.text': 'Cole a descrição de uma vaga para gerar um currículo sob medida.',
+  'empty.profile.title': 'Seu perfil está vazio',
+  'empty.profile.text': 'Adicione suas experiências para que possamos montar currículos a partir delas.',
+  'empty.search.title': 'Nada encontrado',
+  'empty.search.text': 'Tente outros termos ou limpe a busca.',
+  'empty.error.title': 'Algo deu errado',
+  'empty.error.text': 'Não foi possível carregar esta página. Tente novamente.',
+  'dashboard.confirmDeleteTitle': 'Excluir esta vaga?',
+  'profile.leave.title': 'Sair sem salvar?',
+  'profile.leave.action': 'Sair',
 } as const;
 
 export type TranslationKey = keyof typeof pt;
