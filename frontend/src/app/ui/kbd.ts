@@ -1,13 +1,22 @@
 import { ChangeDetectionStrategy, Component, InjectionToken, computed, inject, input } from '@angular/core';
 
+interface PlatformSource {
+  platform?: string;
+  userAgentData?: { platform?: string };
+}
+
+/**
+ * Whether the browser runs on an Apple platform. Checks both the modern `userAgentData.platform`
+ * ("macOS" in Chrome and Edge) and the legacy `platform` ("MacIntel"), case-insensitively.
+ */
+export function isApplePlatform(nav: PlatformSource | undefined): boolean {
+  return [nav?.userAgentData?.platform, nav?.platform].some((value) => /mac|iphone|ipad|ios/i.test(value ?? ''));
+}
+
 /** Whether the keyboard hints should use Apple symbols. Injectable so tests can pick a platform. */
 export const PLATFORM_IS_APPLE = new InjectionToken<boolean>('PLATFORM_IS_APPLE', {
   providedIn: 'root',
-  factory: () => {
-    const nav = globalThis.navigator as (Navigator & { userAgentData?: { platform?: string } }) | undefined;
-    const platform = nav?.userAgentData?.platform || nav?.platform || '';
-    return /Mac|iPhone|iPad/.test(platform);
-  },
+  factory: () => isApplePlatform(globalThis.navigator as PlatformSource | undefined),
 });
 
 const APPLE_SYMBOLS: Record<string, string> = { Mod: '⌘', Enter: '↵', Shift: '⇧', Alt: '⌥' };

@@ -1,6 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { Kbd, PLATFORM_IS_APPLE } from './kbd';
-
+import { Kbd, PLATFORM_IS_APPLE, isApplePlatform } from './kbd';
 
 describe('Kbd', () => {
   function render(keys: string, apple: boolean): string {
@@ -25,5 +24,29 @@ describe('Kbd', () => {
 
   it('spells Enter out elsewhere', () => {
     expect(render('Mod+Enter', false)).toBe('Ctrl+Enter');
+  });
+});
+
+describe('isApplePlatform', () => {
+  it('detects macOS reported by userAgentData (Chrome and Edge)', () => {
+    expect(isApplePlatform({ userAgentData: { platform: 'macOS' } })).toBe(true);
+  });
+
+  it('detects the legacy navigator.platform on a Mac', () => {
+    expect(isApplePlatform({ platform: 'MacIntel' })).toBe(true);
+  });
+
+  it('detects iOS devices', () => {
+    expect(isApplePlatform({ platform: 'iPhone' })).toBe(true);
+    expect(isApplePlatform({ platform: 'iPad' })).toBe(true);
+  });
+
+  it('is false on other platforms', () => {
+    expect(isApplePlatform({ userAgentData: { platform: 'Windows' }, platform: 'Win32' })).toBe(false);
+  });
+
+  it('is false when the browser reports nothing', () => {
+    expect(isApplePlatform({})).toBe(false);
+    expect(isApplePlatform(undefined)).toBe(false);
   });
 });
