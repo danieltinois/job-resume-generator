@@ -154,4 +154,8 @@ export const en: Record<TranslationKey, string> = {
   'dashboard.confirmDeleteTitle': 'Delete this job?',
   'profile.leave.title': 'Leave without saving?',
   'profile.leave.action': 'Leave',
+  'shortcuts.title': 'Keyboard shortcuts',
+  'shortcuts.help': 'Show keyboard shortcuts',
+  'shortcuts.save': 'Save now',
+  'common.close': 'Close',
 };

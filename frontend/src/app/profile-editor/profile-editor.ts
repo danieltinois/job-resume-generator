@@ -13,6 +13,7 @@ import { AuthStore } from '../core/auth/auth-store';
 import { downloadBlob } from '../core/download';
 import { fieldError } from '../core/forms/field-error';
 import { I18n } from '../core/i18n/i18n';
+import { Shortcuts } from '../core/shortcuts/shortcuts';
 import { ConfirmDialog } from '../ui/confirm-dialog';
 import { Autosave, type ConflictChoice, type SaveStatus } from './autosave';
 import { ConflictDialog } from './conflict-dialog';
@@ -60,7 +61,7 @@ const SECTIONS: ProfileSection[] = [
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './profile-editor.html',
   styleUrl: './profile-editor.scss',
-  host: { '(document:keydown)': 'onKeydown($event)', '(window:beforeunload)': 'onBeforeUnload($event)' },
+  host: { '(window:beforeunload)': 'onBeforeUnload($event)' },
 })
 export class ProfileEditor {
   protected readonly i18n = inject(I18n);
@@ -113,6 +114,10 @@ export class ProfileEditor {
       .pipe(takeUntilDestroyed())
       .subscribe((stored) => this.load(stored));
     this.destroyRef.onDestroy(() => this.current()?.stop());
+    inject(Shortcuts).register(
+      { key: 's', mod: true, description: 'shortcuts.save', handler: () => void this.current()?.saveNow() },
+      this.destroyRef,
+    );
   }
 
   /** Replaces the form with a profile from the server (initial load, conflict reload, import). */
@@ -159,13 +164,6 @@ export class ProfileEditor {
   protected onBeforeUnload(event: BeforeUnloadEvent): void {
     if (this.current()?.hasUnsavedChanges()) {
       event.preventDefault();
-    }
-  }
-
-  protected onKeydown(event: KeyboardEvent): void {
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
-      event.preventDefault();
-      void this.current()?.saveNow();
     }
   }
 

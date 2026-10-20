@@ -153,6 +153,10 @@ export const pt = {
   'dashboard.confirmDeleteTitle': 'Excluir esta vaga?',
   'profile.leave.title': 'Sair sem salvar?',
   'profile.leave.action': 'Sair',
+  'shortcuts.title': 'Atalhos de teclado',
+  'shortcuts.help': 'Mostrar os atalhos de teclado',
+  'shortcuts.save': 'Salvar agora',
+  'common.close': 'Fechar',
 } as const;
 
 export type TranslationKey = keyof typeof pt;
