@@ -102,4 +102,21 @@ describe('Shortcuts', () => {
 
     expect(handler).not.toHaveBeenCalled();
   });
+
+  it('ignores keydown events without a key, as browser autofill dispatches them', () => {
+    service.register({ key: 'n', description: 'shortcuts.help', handler }, owner);
+    // A throwing listener does not make dispatchEvent throw: it is reported on window.
+    const errors: unknown[] = [];
+    const onError = (event: ErrorEvent) => {
+      event.preventDefault();
+      errors.push(event.error);
+    };
+    window.addEventListener('error', onError);
+
+    document.dispatchEvent(new Event('keydown', { bubbles: true }));
+
+    window.removeEventListener('error', onError);
+    expect(errors).toEqual([]);
+    expect(handler).not.toHaveBeenCalled();
+  });
 });

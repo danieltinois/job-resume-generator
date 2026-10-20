@@ -28,7 +28,9 @@ export class Shortcuts {
 
   constructor() {
     const document = inject(DOCUMENT);
-    document.addEventListener('keydown', (event) => this.onKeydown(event));
+    const listener = (event: KeyboardEvent) => this.onKeydown(event);
+    document.addEventListener('keydown', listener);
+    inject(DestroyRef).onDestroy(() => document.removeEventListener('keydown', listener));
   }
 
   register(shortcut: Shortcut, destroyRef: DestroyRef): void {
@@ -37,6 +39,10 @@ export class Shortcuts {
   }
 
   private onKeydown(event: KeyboardEvent): void {
+    // Browser autofill dispatches plain `Event`s named keydown, with no `key`.
+    if (typeof event.key !== 'string') {
+      return;
+    }
     const mod = event.ctrlKey || event.metaKey;
     const key = event.key.toLowerCase();
     const match = this.registered().find(
