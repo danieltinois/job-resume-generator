@@ -1,0 +1,78 @@
+// The form column of the sign-in and account screens (inside `AuthLayout`): a title, a muted
+// subtitle, stacked fields, full-width buttons and quiet links.
+.auth-form {
+  h1 {
+    margin: 0 0 4px;
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+  }
+
+  .subtitle {
+    margin: 0 0 24px;
+    color: var(--app-muted);
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  mat-form-field {
+    width: 100%;
+  }
+
+  // A field with a link right under it ("Forgot your password?").
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .field-link {
+    align-self: flex-end;
+    padding: 4px 0;
+    font-size: 13px;
+  }
+
+  .notice {
+    margin: 0 0 16px;
+  }
+
+  // Inside a form the 16 px gap already spaces the notice.
+  form .notice {
+    margin: 0;
+  }
+
+  // "or", with a line on both sides.
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+    color: var(--app-muted);
+
+    &::before,
+    &::after {
+      content: '';
+      flex: 1;
+      border-top: 1px solid var(--app-border);
+    }
+  }
+
+  // A centred, muted line that ends in a link.
+  .switch {
+    margin: 24px 0 0;
+    text-align: center;
+    color: var(--app-muted);
+  }
+
+  a:not([mat-stroked-button]) {
+    color: var(--app-accent);
+    font-weight: 500;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+}

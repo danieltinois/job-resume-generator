@@ -63,10 +63,20 @@ html {
     )
   );
 
-  // Outlined form fields, 8 px radius.
+  // Outlined form fields: 8 px radius and a 40 px container (8 + 24 line + 8), like the buttons.
+  // Density -1 alone gives 52 px, so the height and padding are set here. Text and labels are
+  // 14 px (the app's base size); the floating label shrinks from that size. Error and hint text
+  // sit below the container and are not affected.
   @include mat.form-field-overrides(
     (
       outlined-container-shape: 8px,
+      container-height: 40px,
+      container-vertical-padding: 8px,
+      container-text-size: 14px,
+      container-text-line-height: 24px,
+      container-text-tracking: 0,
+      outlined-label-text-size: 14px,
+      outlined-label-text-tracking: 0,
     )
   );
 

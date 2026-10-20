@@ -2,7 +2,6 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { RouterLink } from '@angular/router';
@@ -14,11 +13,12 @@ import { I18n } from '../core/i18n/i18n';
 /** Landing page of the reset email: /reset-password?token=… */
 @Component({
   selector: 'app-reset-password',
-  imports: [ReactiveFormsModule, RouterLink, MatCardModule, MatFormFieldModule, MatInputModule, MatButtonModule],
+  imports: [ReactiveFormsModule, RouterLink, MatFormFieldModule, MatInputModule, MatButtonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <mat-card class="auth-card">
+    <div class="auth-form">
       <h1>{{ i18n.t('auth.reset.title') }}</h1>
+      <p class="subtitle">{{ i18n.t('auth.reset.subtitle') }}</p>
       @switch (state()) {
         @case ('done') {
           <p class="notice" role="status">{{ i18n.t('auth.reset.done') }}</p>
@@ -33,14 +33,14 @@ import { I18n } from '../core/i18n/i18n';
               <input matInput name="password" type="password" autocomplete="new-password" formControlName="password" />
               <mat-error>{{ fieldError(form.controls.password, i18n) }}</mat-error>
             </mat-form-field>
-            <button mat-flat-button type="submit">{{ i18n.t('auth.reset.submit') }}</button>
+            <button mat-flat-button class="full-width" type="submit">{{ i18n.t('auth.reset.submit') }}</button>
           </form>
         }
       }
-      <nav class="links">
+      <p class="switch">
         <a routerLink="/login">{{ i18n.t('auth.back') }}</a>
-      </nav>
-    </mat-card>
+      </p>
+    </div>
   `,
 })
 export class ResetPassword {

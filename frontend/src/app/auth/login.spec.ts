@@ -45,6 +45,20 @@ describe('Login', () => {
     expect(backend.expectOne('/api/auth/resend-verification').request.body).toEqual({ email: 'alex@example.com' });
   });
 
+  it('links to registration and password reset', async () => {
+    const fixture = await render(true);
+    const element: HTMLElement = fixture.nativeElement;
+    const column = element.querySelector('.auth-form');
+    expect(column).not.toBeNull();
+    for (const href of ['/register', '/forgot-password']) {
+      const link = element.querySelector(`a[href="${href}"]`);
+      expect(link, href).not.toBeNull();
+      expect(column!.contains(link), href).toBe(true);
+    }
+    expect(element.querySelectorAll('h1').length).toBe(1);
+    expect(element.querySelector('mat-card')).toBeNull();
+  });
+
   it('explains invalid credentials', async () => {
     const fixture = await render(false);
     const element: HTMLElement = fixture.nativeElement;

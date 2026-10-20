@@ -10,7 +10,11 @@ import { I18n } from '../core/i18n/i18n';
 @Component({
   selector: 'app-google-callback',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<p class="auth-card" role="status">{{ i18n.t('auth.callback') }}</p>`,
+  template: `
+    <div class="auth-form">
+      <p class="notice" role="status">{{ i18n.t('auth.callback') }}</p>
+    </div>
+  `,
 })
 export class GoogleCallback implements OnInit {
   protected readonly i18n = inject(I18n);

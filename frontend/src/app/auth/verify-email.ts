@@ -1,6 +1,5 @@
 import { HttpClient } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, OnInit, inject, input, signal } from '@angular/core';
-import { MatCardModule } from '@angular/material/card';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { I18n } from '../core/i18n/i18n';
@@ -8,13 +7,14 @@ import { I18n } from '../core/i18n/i18n';
 /** Landing page of the verification email: /verify-email?token=… */
 @Component({
   selector: 'app-verify-email',
-  imports: [RouterLink, MatCardModule],
+  imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <mat-card class="auth-card">
+    <div class="auth-form">
+      <h1>{{ i18n.t('auth.verify.title') }}</h1>
       @switch (state()) {
         @case ('pending') {
-          <p role="status">{{ i18n.t('auth.verify.pending') }}</p>
+          <p class="notice" role="status">{{ i18n.t('auth.verify.pending') }}</p>
         }
         @case ('done') {
           <p class="notice" role="status">{{ i18n.t('auth.verify.done') }}</p>
@@ -23,10 +23,10 @@ import { I18n } from '../core/i18n/i18n';
           <p class="notice error" role="alert">{{ i18n.t('auth.link.invalid') }}</p>
         }
       }
-      <nav class="links">
+      <p class="switch">
         <a routerLink="/login">{{ i18n.t('auth.back') }}</a>
-      </nav>
-    </mat-card>
+      </p>
+    </div>
   `,
 })
 export class VerifyEmail implements OnInit {

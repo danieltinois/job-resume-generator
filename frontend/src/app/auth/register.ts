@@ -2,7 +2,6 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { RouterLink } from '@angular/router';
@@ -14,11 +13,12 @@ import { I18n } from '../core/i18n/i18n';
 
 @Component({
   selector: 'app-register',
-  imports: [ReactiveFormsModule, RouterLink, MatCardModule, MatFormFieldModule, MatInputModule, MatButtonModule],
+  imports: [ReactiveFormsModule, RouterLink, MatFormFieldModule, MatInputModule, MatButtonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <mat-card class="auth-card">
+    <div class="auth-form">
       <h1>{{ i18n.t('auth.register.title') }}</h1>
+      <p class="subtitle">{{ i18n.t('auth.register.subtitle') }}</p>
       @if (done()) {
         <p class="notice" role="status">{{ i18n.t('auth.register.done') }}</p>
       } @else {
@@ -41,13 +41,13 @@ import { I18n } from '../core/i18n/i18n';
           @if (message()) {
             <p class="notice error" role="alert">{{ message() }}</p>
           }
-          <button mat-flat-button type="submit" [disabled]="busy()">{{ i18n.t('auth.register.submit') }}</button>
+          <button mat-flat-button class="full-width" type="submit" [disabled]="busy()">{{ i18n.t('auth.register.submit') }}</button>
         </form>
       }
-      <nav class="links">
+      <p class="switch">
         <a routerLink="/login">{{ i18n.t('auth.register.haveAccount') }}</a>
-      </nav>
-    </mat-card>
+      </p>
+    </div>
   `,
 })
 export class Register {

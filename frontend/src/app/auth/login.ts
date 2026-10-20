@@ -3,7 +3,6 @@ import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angu
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { Router, RouterLink } from '@angular/router';
@@ -15,11 +14,12 @@ import { I18n } from '../core/i18n/i18n';
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, RouterLink, MatCardModule, MatFormFieldModule, MatInputModule, MatButtonModule],
+  imports: [ReactiveFormsModule, RouterLink, MatFormFieldModule, MatInputModule, MatButtonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <mat-card class="auth-card">
+    <div class="auth-form">
       <h1>{{ i18n.t('auth.login.title') }}</h1>
+      <p class="subtitle">{{ i18n.t('auth.login.subtitle') }}</p>
       @if (expired()) {
         <p class="notice" role="status">{{ i18n.t('auth.expired') }}</p>
       }
@@ -32,11 +32,14 @@ import { I18n } from '../core/i18n/i18n';
           <input matInput name="email" type="email" autocomplete="email" formControlName="email" />
           <mat-error>{{ fieldError(form.controls.email, i18n) }}</mat-error>
         </mat-form-field>
-        <mat-form-field>
-          <mat-label>{{ i18n.t('auth.password') }}</mat-label>
-          <input matInput name="password" type="password" autocomplete="current-password" formControlName="password" />
-          <mat-error>{{ fieldError(form.controls.password, i18n) }}</mat-error>
-        </mat-form-field>
+        <div class="field">
+          <mat-form-field>
+            <mat-label>{{ i18n.t('auth.password') }}</mat-label>
+            <input matInput name="password" type="password" autocomplete="current-password" formControlName="password" />
+            <mat-error>{{ fieldError(form.controls.password, i18n) }}</mat-error>
+          </mat-form-field>
+          <a class="field-link" routerLink="/forgot-password">{{ i18n.t('auth.login.forgot') }}</a>
+        </div>
         @if (message()) {
           <p class="notice error" role="alert">{{ message() }}</p>
         }
@@ -44,22 +47,22 @@ import { I18n } from '../core/i18n/i18n';
           @if (resent()) {
             <p class="notice" role="status">{{ i18n.t('auth.resent') }}</p>
           } @else {
-            <button mat-stroked-button type="button" data-test="resend" (click)="resend()">
+            <button mat-stroked-button class="full-width" type="button" data-test="resend" (click)="resend()">
               {{ i18n.t('auth.resend') }}
             </button>
           }
         }
-        <button mat-flat-button type="submit" [disabled]="busy()">{{ i18n.t('auth.login.submit') }}</button>
+        <button mat-flat-button class="full-width" type="submit" [disabled]="busy()">{{ i18n.t('auth.login.submit') }}</button>
       </form>
       @if (providers().google) {
         <p class="divider">{{ i18n.t('auth.login.or') }}</p>
-        <a mat-stroked-button href="/oauth2/authorization/google">{{ i18n.t('auth.login.google') }}</a>
+        <a mat-stroked-button class="full-width" href="/oauth2/authorization/google">{{ i18n.t('auth.login.google') }}</a>
       }
-      <nav class="links">
+      <p class="switch">
+        {{ i18n.t('auth.login.newHere') }}
         <a routerLink="/register">{{ i18n.t('auth.login.noAccount') }}</a>
-        <a routerLink="/forgot-password">{{ i18n.t('auth.login.forgot') }}</a>
-      </nav>
-    </mat-card>
+      </p>
+    </div>
   `,
 })
 export class Login {

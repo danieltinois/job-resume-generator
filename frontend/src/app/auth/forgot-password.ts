@@ -2,7 +2,6 @@ import { HttpClient } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { RouterLink } from '@angular/router';
@@ -12,11 +11,12 @@ import { I18n } from '../core/i18n/i18n';
 
 @Component({
   selector: 'app-forgot-password',
-  imports: [ReactiveFormsModule, RouterLink, MatCardModule, MatFormFieldModule, MatInputModule, MatButtonModule],
+  imports: [ReactiveFormsModule, RouterLink, MatFormFieldModule, MatInputModule, MatButtonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <mat-card class="auth-card">
+    <div class="auth-form">
       <h1>{{ i18n.t('auth.forgot.title') }}</h1>
+      <p class="subtitle">{{ i18n.t('auth.forgot.subtitle') }}</p>
       @if (sent()) {
         <p class="notice" role="status">{{ i18n.t('auth.forgot.sent') }}</p>
       } @else {
@@ -26,13 +26,13 @@ import { I18n } from '../core/i18n/i18n';
             <input matInput name="email" type="email" autocomplete="email" formControlName="email" />
             <mat-error>{{ fieldError(form.controls.email, i18n) }}</mat-error>
           </mat-form-field>
-          <button mat-flat-button type="submit">{{ i18n.t('auth.forgot.submit') }}</button>
+          <button mat-flat-button class="full-width" type="submit">{{ i18n.t('auth.forgot.submit') }}</button>
         </form>
       }
-      <nav class="links">
+      <p class="switch">
         <a routerLink="/login">{{ i18n.t('auth.back') }}</a>
-      </nav>
-    </mat-card>
+      </p>
+    </div>
   `,
 })
 export class ForgotPassword {
