@@ -10,13 +10,21 @@ export interface Shortcut {
   mod?: boolean;
   description: TranslationKey;
   handler: () => void;
+  /**
+   * Whether the shortcut applies right now. A disabled one does nothing, leaves the key to the browser and is
+   * left out of the help dialog. Read inside a signal context, it may depend on signals.
+   */
+  enabled?: () => boolean;
 }
 
 const TYPING = 'input, textarea, select, [contenteditable]:not([contenteditable="false"])';
+/** An open mat-menu holds focus in a menu role: its arrow, Enter and letter keys belong to it. */
+const MENU = '[role="menu"]';
 
 /**
  * The one keyboard listener of the app. Components register shortcuts for as long as they live.
- * Plain keys stay out of the way while the user types or a dialog is open; Ctrl/Cmd combinations do not.
+ * Plain keys stay out of the way while the user types, a dialog is open or focus is inside a menu; Ctrl/Cmd
+ * combinations do not.
  */
 @Injectable({ providedIn: 'root' })
 export class Shortcuts {
@@ -46,7 +54,11 @@ export class Shortcuts {
     const mod = event.ctrlKey || event.metaKey;
     const key = event.key.toLowerCase();
     const match = this.registered().find(
-      (shortcut) => shortcut.key.toLowerCase() === key && !!shortcut.mod === mod && (mod || !event.altKey),
+      (shortcut) =>
+        shortcut.key.toLowerCase() === key &&
+        !!shortcut.mod === mod &&
+        (mod || !event.altKey) &&
+        (shortcut.enabled?.() ?? true),
     );
     if (!match || (!match.mod && this.plainKeysBlocked(event))) {
       return;
@@ -57,6 +69,8 @@ export class Shortcuts {
 
   private plainKeysBlocked(event: KeyboardEvent): boolean {
     const target = event.target;
-    return (target instanceof Element && target.closest(TYPING) !== null) || this.dialog.openDialogs.length > 0;
+    return (
+      (target instanceof Element && target.closest(`${TYPING}, ${MENU}`) !== null) || this.dialog.openDialogs.length > 0
+    );
   }
 }

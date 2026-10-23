@@ -1,4 +1,4 @@
-import { DestroyRef } from '@angular/core';
+import { DestroyRef, signal } from '@angular/core';
 import { OverlayContainer } from '@angular/cdk/overlay';
 import { TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
@@ -24,6 +24,29 @@ describe('ShortcutsDialog', () => {
       TestBed.tick();
       const keys = [...dialogOverlay().querySelectorAll('kbd')].map((kbd) => kbd.textContent?.trim());
       expect(keys).toEqual(['Ctrl+S', 'N', '?']);
+    });
+  });
+
+  it('leaves out a shortcut that is disabled right now', async () => {
+    const handler = () => undefined;
+    const shortcuts = TestBed.inject(Shortcuts);
+    const owner = TestBed.inject(DestroyRef);
+    const searchable = signal(false);
+    shortcuts.register({ key: 'n', description: 'shortcuts.help', handler }, owner);
+    shortcuts.register({ key: '/', description: 'shortcuts.search', handler, enabled: () => searchable() }, owner);
+
+    TestBed.inject(MatDialog).open(ShortcutsDialog);
+
+    const keys = () => [...dialogOverlay().querySelectorAll('kbd')].map((kbd) => kbd.textContent?.trim());
+    await vi.waitFor(() => {
+      TestBed.tick();
+      expect(keys()).toEqual(['N', '?']);
+    });
+
+    searchable.set(true);
+    await vi.waitFor(() => {
+      TestBed.tick();
+      expect(keys()).toEqual(['N', '/', '?']);
     });
   });
 

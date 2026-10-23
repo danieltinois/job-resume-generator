@@ -1,5 +1,5 @@
 import { type Mock, vi } from 'vitest';
-import { DestroyRef, EnvironmentInjector, createEnvironmentInjector } from '@angular/core';
+import { DestroyRef, EnvironmentInjector, createEnvironmentInjector, signal } from '@angular/core';
 import { OverlayContainer } from '@angular/cdk/overlay';
 import { TestBed } from '@angular/core/testing';
 import { ConfirmDialog } from '../../ui/confirm-dialog';
@@ -74,6 +74,42 @@ describe('Shortcuts', () => {
     press({ key: 'n' });
 
     expect(handler).not.toHaveBeenCalled();
+  });
+
+  it('ignores plain keys while focus is inside an open menu', () => {
+    service.register({ key: 'n', description: 'shortcuts.help', handler }, owner);
+    const menu = attach(document.createElement('div'));
+    menu.setAttribute('role', 'menu');
+    const item = menu.appendChild(document.createElement('button'));
+    item.setAttribute('role', 'menuitem');
+
+    press({ key: 'n' }, item);
+    expect(handler).not.toHaveBeenCalled();
+
+    press({ key: 'n' }, attach(document.createElement('button')));
+    expect(handler).toHaveBeenCalledTimes(1);
+  });
+
+  it('still runs mod shortcuts inside an open menu', () => {
+    service.register({ key: 's', mod: true, description: 'shortcuts.save', handler }, owner);
+    const menu = attach(document.createElement('div'));
+    menu.setAttribute('role', 'menu');
+
+    press({ key: 's', ctrlKey: true }, menu);
+
+    expect(handler).toHaveBeenCalledTimes(1);
+  });
+
+  it('does nothing, and leaves the key to the browser, while a shortcut is disabled', () => {
+    const enabled = signal(false);
+    service.register({ key: '/', description: 'shortcuts.search', handler, enabled: () => enabled() }, owner);
+
+    expect(press({ key: '/' }).defaultPrevented).toBe(false);
+    expect(handler).not.toHaveBeenCalled();
+
+    enabled.set(true);
+    expect(press({ key: '/' }).defaultPrevented).toBe(true);
+    expect(handler).toHaveBeenCalledTimes(1);
   });
 
   it('forgets a shortcut when its owner is destroyed', () => {

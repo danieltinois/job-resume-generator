@@ -7,6 +7,7 @@ import { AuthStore } from '../core/auth/auth-store';
 import example from '../../testing/profile-example.json';
 import { apiTestProviders } from '../auth/testing';
 import { confirmDialogButton, dialogClosed, dialogOverlay } from '../ui/testing';
+import { Shortcuts } from '../core/shortcuts/shortcuts';
 import { Dashboard } from './dashboard';
 
 const JOBS = [
@@ -20,13 +21,13 @@ describe('Dashboard', () => {
 
   afterEach(() => TestBed.inject(OverlayContainer).ngOnDestroy());
 
-  async function render(profile: unknown = example) {
+  async function render(profile: unknown = example, jobs: typeof JOBS = JOBS) {
     TestBed.configureTestingModule({ imports: [Dashboard], providers: apiTestProviders });
     backend = TestBed.inject(HttpTestingController);
     TestBed.inject(AuthStore).acceptToken('token');
     const fixture = TestBed.createComponent(Dashboard);
     fixture.detectChanges();
-    backend.expectOne('/api/jobs').flush(JOBS);
+    backend.expectOne('/api/jobs').flush(jobs);
     backend.expectOne('/api/resumes').flush(RESUMES);
     backend.expectOne('/api/profile').flush({ version: 1, data: profile });
     await fixture.whenStable();
@@ -110,6 +111,18 @@ describe('Dashboard', () => {
     document.dispatchEvent(new KeyboardEvent('keydown', { key: '/', bubbles: true, cancelable: true }));
 
     expect(document.activeElement).toBe(fixture.nativeElement.querySelector('input[type="search"]'));
+  });
+
+  it('leaves slash alone and out of the help while there is no search field', async () => {
+    const fixture = await render(example, []);
+    const event = new KeyboardEvent('keydown', { key: '/', bubbles: true, cancelable: true });
+
+    document.dispatchEvent(event);
+
+    expect(fixture.nativeElement.querySelector('input[type="search"]')).toBeNull();
+    expect(event.defaultPrevented).toBe(false);
+    const shortcuts = TestBed.inject(Shortcuts).active().filter((shortcut) => shortcut.enabled?.() ?? true);
+    expect(shortcuts.map((shortcut) => shortcut.key)).not.toContain('/');
   });
 
   it('shows skeletons while loading', () => {

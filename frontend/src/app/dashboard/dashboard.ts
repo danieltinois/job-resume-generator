@@ -62,7 +62,13 @@ export class Dashboard {
 
   constructor() {
     inject(Shortcuts).register(
-      { key: '/', description: 'shortcuts.search', handler: () => this.searchInput()?.nativeElement.focus() },
+      {
+        key: '/',
+        description: 'shortcuts.search',
+        handler: () => this.searchInput()?.nativeElement.focus(),
+        // The search field only exists once there is a job to search.
+        enabled: () => this.searchInput() !== undefined,
+      },
       inject(DestroyRef),
     );
     this.load();

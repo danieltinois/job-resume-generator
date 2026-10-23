@@ -64,7 +64,7 @@ export class ShortcutsDialog {
   protected readonly rows = computed<Row[]>(() => [
     ...this.shortcuts
       .active()
-      .filter((shortcut) => shortcut.key !== '?')
+      .filter((shortcut) => shortcut.key !== '?' && (shortcut.enabled?.() ?? true))
       .map((shortcut) => ({ keys: keysOf(shortcut.key, shortcut.mod), description: shortcut.description })),
     { keys: '?', description: 'shortcuts.help' },
   ]);
