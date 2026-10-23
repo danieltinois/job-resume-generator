@@ -55,6 +55,7 @@ test('has no serious accessibility violations in the light and dark schemes', as
 
   const screens: [string, string, () => Promise<unknown>][] = [
     ['dashboard', '/', () => expect(page.getByRole('heading', { name: 'My jobs' })).toBeVisible()],
+    ['new job', '/jobs/new', () => expect(page.getByLabel('Job description')).toBeVisible()],
     [
       'profile',
       '/profile',
