@@ -60,4 +60,61 @@ describe('Theme', () => {
     expect(theme.mode()).toBe('light');
     expect(document.documentElement.style.colorScheme).toBe('light');
   });
+
+  describe('browser bar colour', () => {
+    let light: HTMLMetaElement;
+    let dark: HTMLMetaElement;
+
+    // The two metas of index.html.
+    beforeEach(() => {
+      light = document.createElement('meta');
+      dark = document.createElement('meta');
+      for (const [meta, color, scheme] of [
+        [light, '#fafafa', 'light'],
+        [dark, '#09090b', 'dark'],
+      ] as const) {
+        meta.name = 'theme-color';
+        meta.content = color;
+        meta.setAttribute('media', `(prefers-color-scheme: ${scheme})`);
+        document.head.appendChild(meta);
+      }
+    });
+    afterEach(() => {
+      light.remove();
+      dark.remove();
+    });
+
+    const colors = () => [light.content, dark.content];
+
+    it('keeps each scheme its own colour on system', () => {
+      TestBed.inject(Theme);
+      TestBed.tick();
+
+      expect(colors()).toEqual(['#fafafa', '#09090b']);
+    });
+
+    it('follows an explicit choice whichever scheme the system prefers', () => {
+      const theme = TestBed.inject(Theme);
+
+      theme.set('dark');
+      TestBed.tick();
+      expect(colors()).toEqual(['#09090b', '#09090b']);
+
+      theme.set('light');
+      TestBed.tick();
+      expect(colors()).toEqual(['#fafafa', '#fafafa']);
+
+      theme.set('system');
+      TestBed.tick();
+      expect(colors()).toEqual(['#fafafa', '#09090b']);
+    });
+
+    it('applies the saved choice as soon as the service exists', () => {
+      localStorage.setItem('ui-theme', 'dark');
+
+      TestBed.inject(Theme);
+
+      expect(colors()).toEqual(['#09090b', '#09090b']);
+    });
+  });
 });

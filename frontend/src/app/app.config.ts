@@ -10,6 +10,7 @@ import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { routes } from './app.routes';
 import { AuthStore } from './core/auth/auth-store';
 import { authInterceptor } from './core/auth/auth.interceptor';
+import { Theme } from './core/theme/theme';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -20,6 +21,8 @@ export const appConfig: ApplicationConfig = {
       provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
       useValue: { appearance: 'outline', subscriptSizing: 'dynamic' },
     },
+    // The saved colour scheme goes on the page first, so nothing flashes while the session is restored.
+    provideAppInitializer(() => void inject(Theme)),
     // Restore the session from the refresh cookie before the first route is guarded.
     provideAppInitializer(() => inject(AuthStore).restore()),
   ],
