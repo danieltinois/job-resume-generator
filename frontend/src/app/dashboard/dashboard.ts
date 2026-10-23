@@ -1,121 +1,47 @@
 import { DatePipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal, viewChild, type ElementRef } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatChipsModule } from '@angular/material/chips';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom, forkJoin } from 'rxjs';
 import type { JobSummary, ResumeSummary, StoredProfile } from '../core/api/types';
 import { downloadBlob } from '../core/download';
 import { I18n } from '../core/i18n/i18n';
+import { Shortcuts } from '../core/shortcuts/shortcuts';
 import { ConfirmDialog } from '../ui/confirm-dialog';
+import { EmptyState } from '../ui/empty-state';
+import { Kbd } from '../ui/kbd';
+import { PageHeader } from '../ui/page-header';
+import { Skeleton } from '../ui/skeleton';
+import { StatusPill } from '../ui/status-pill';
+import { filterJobs } from './job-filter';
 
-/** Home: every pasted job with the resumes generated for it. */
+/** Home: every pasted job with the resumes generated for it, searchable by title and company. */
 @Component({
   selector: 'app-dashboard',
-  imports: [RouterLink, DatePipe, MatButtonModule, MatCardModule, MatChipsModule],
+  imports: [
+    RouterLink,
+    DatePipe,
+    MatButtonModule,
+    MatIconModule,
+    MatMenuModule,
+    PageHeader,
+    EmptyState,
+    Skeleton,
+    StatusPill,
+    Kbd,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <div class="page">
-      <header class="page-header">
-        <h1>{{ i18n.t('dashboard.title') }}</h1>
-        <a mat-flat-button routerLink="/jobs/new">+ {{ i18n.t('dashboard.newJob') }}</a>
-      </header>
-
-      @if (loaded()) {
-        @if (profileEmpty()) {
-          <mat-card class="call-to-action">
-            <p>{{ i18n.t('dashboard.emptyProfile') }}</p>
-            <a mat-stroked-button routerLink="/profile" data-test="fill-profile">{{ i18n.t('dashboard.fillProfile') }}</a>
-          </mat-card>
-        }
-        @for (job of jobs(); track job.id) {
-          <mat-card class="job" data-test="job">
-            <div class="job-header">
-              <div>
-                <h2>{{ job.title || i18n.t('profile.untitled') }}</h2>
-                <p class="meta">
-                  @if (job.company) { {{ job.company }} · }
-                  {{ job.createdAt | date: 'mediumDate' }}
-                  <span class="language">{{ job.language }}</span>
-                </p>
-              </div>
-              <div class="actions">
-                <a mat-flat-button [routerLink]="['/jobs', job.id, 'review']">{{ i18n.t('dashboard.review') }}</a>
-                <button mat-button type="button" data-test="delete-job" (click)="deleteJob(job)">
-                  {{ i18n.t('common.remove') }}
-                </button>
-              </div>
-            </div>
-            @for (resume of resumesOf(job.id); track resume.id) {
-              <div class="resume" data-test="resume">
-                <span>{{ i18n.t('dashboard.resume') }} {{ resume.language }} · {{ resume.createdAt | date: 'short' }}</span>
-                <button mat-button type="button" (click)="download(resume)">{{ i18n.t('dashboard.download') }}</button>
-                <button mat-button type="button" (click)="deleteResume(resume)">{{ i18n.t('common.remove') }}</button>
-              </div>
-            }
-          </mat-card>
-        } @empty {
-          <p class="empty">{{ i18n.t('dashboard.noJobs') }}</p>
-        }
-      } @else if (loadFailed()) {
-        <p class="notice error" role="alert">{{ i18n.t('common.loadFailed') }}</p>
-        <button mat-stroked-button type="button" data-test="retry" (click)="load()">{{ i18n.t('common.retry') }}</button>
-      } @else {
-        <p role="status">{{ i18n.t('common.loading') }}</p>
-      }
-    </div>
-  `,
-  styles: `
-    .page {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 16px;
-    }
-    .page-header,
-    .job-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .job,
-    .call-to-action {
-      margin-bottom: 16px;
-      padding: 16px;
-    }
-    h2 {
-      margin: 0;
-    }
-    .meta {
-      margin: 4px 0 0;
-      color: var(--mat-sys-on-surface-variant);
-    }
-    .language {
-      margin-left: 8px;
-      padding: 0 6px;
-      border-radius: 6px;
-      background: var(--mat-sys-secondary-container);
-    }
-    .resume {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      border-top: 1px solid var(--mat-sys-outline-variant);
-      margin-top: 8px;
-      padding-top: 8px;
-    }
-    .resume span {
-      flex: 1;
-    }
-  `,
+  templateUrl: './dashboard.html',
+  styleUrl: './dashboard.scss',
 })
 export class Dashboard {
   protected readonly i18n = inject(I18n);
   private readonly http = inject(HttpClient);
   private readonly confirmDialog = inject(ConfirmDialog);
+  private readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('search');
 
   protected readonly jobs = signal<JobSummary[]>([]);
   protected readonly resumes = signal<ResumeSummary[]>([]);
@@ -123,9 +49,27 @@ export class Dashboard {
   protected readonly loaded = signal(false);
   protected readonly loadFailed = signal(false);
   protected readonly profileEmpty = computed(() => !this.profile()?.data?.experiences?.length);
+  protected readonly query = signal('');
+  protected readonly visibleJobs = computed(() => filterJobs(this.jobs(), this.query()));
+  protected readonly summary = computed(() =>
+    this.i18n.t('dashboard.count', {
+      jobs: this.i18n.t(this.jobs().length === 1 ? 'dashboard.jobsOne' : 'dashboard.jobsMany', { n: this.jobs().length }),
+      resumes: this.i18n.t(this.resumes().length === 1 ? 'dashboard.generatedOne' : 'dashboard.generatedMany', {
+        n: this.resumes().length,
+      }),
+    }),
+  );
 
   constructor() {
+    inject(Shortcuts).register(
+      { key: '/', description: 'shortcuts.search', handler: () => this.searchInput()?.nativeElement.focus() },
+      inject(DestroyRef),
+    );
     this.load();
+  }
+
+  protected resumeCount(count: number): string {
+    return this.i18n.t(count === 1 ? 'dashboard.resumesOne' : 'dashboard.resumesMany', { n: count });
   }
 
   protected load(): void {

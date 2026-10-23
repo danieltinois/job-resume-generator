@@ -1,0 +1,233 @@
+@use '@angular/material' as mat;
+
+:host {
+  display: block;
+}
+
+.page {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  width: 280px;
+  max-width: 100%;
+  height: 40px;
+  padding: 0 10px 0 12px;
+  border: 1px solid var(--app-border-strong);
+  border-radius: 8px;
+  background: var(--app-surface);
+  color: var(--app-muted);
+  cursor: text;
+  transition: border-color 150ms ease;
+
+  &:focus-within {
+    border-color: var(--app-accent);
+    outline: 2px solid var(--app-accent);
+    outline-offset: 2px;
+  }
+
+  mat-icon {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+  }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--app-text);
+    font: inherit;
+
+    &::placeholder {
+      color: var(--app-muted);
+    }
+  }
+}
+
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  margin-bottom: 16px;
+  padding: 16px;
+  border: 1px solid var(--app-border);
+  border-radius: 12px;
+  background: var(--app-accent-soft);
+  color: var(--app-on-accent-soft);
+
+  p {
+    margin: 0;
+    flex: 1 1 280px;
+  }
+}
+
+.jobs {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--app-border);
+  border-radius: 12px;
+  background: var(--app-surface);
+  overflow: hidden;
+}
+
+.job + .job {
+  border-top: 1px solid var(--app-border);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  padding: 14px 16px;
+}
+
+.main {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 24px;
+  color: var(--app-text);
+}
+
+.language {
+  flex: none;
+  padding: 0 8px;
+  border: 1px solid var(--app-border-strong);
+  border-radius: 999px;
+  color: var(--app-muted);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.meta {
+  margin: 2px 0 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--app-muted);
+}
+
+.date {
+  font-variant-numeric: tabular-nums;
+}
+
+.review {
+  @include mat.button-overrides((outlined-container-height: 36px));
+}
+
+.more {
+  @include mat.icon-button-overrides((state-layer-size: 40px, icon-color: var(--app-muted)));
+}
+
+.resume {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px 6px 28px;
+  border-top: 1px solid var(--app-border);
+  background: var(--app-subtle);
+}
+
+.doc {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+  color: var(--app-muted);
+}
+
+.resume-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.download {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 36px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--app-accent);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+
+  &:hover {
+    background: var(--app-accent-soft);
+  }
+
+  mat-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+  }
+}
+
+.remove-resume {
+  @include mat.icon-button-overrides((state-layer-size: 36px, icon-color: var(--app-muted)));
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 24px 16px;
+  }
+
+  .search {
+    width: 100%;
+  }
+
+  .hint {
+    display: none;
+  }
+
+  .resume {
+    padding-left: 16px;
+  }
+}

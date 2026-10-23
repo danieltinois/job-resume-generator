@@ -1,0 +1,122 @@
+<div class="page">
+  <app-page-header [title]="i18n.t('dashboard.title')" [subtitle]="loaded() ? summary() : undefined">
+    <div actions class="header-actions">
+      @if (jobs().length) {
+        <label class="search">
+          <mat-icon aria-hidden="true">search</mat-icon>
+          <input
+            #search
+            type="search"
+            autocomplete="off"
+            [value]="query()"
+            [placeholder]="i18n.t('dashboard.search')"
+            [attr.aria-label]="i18n.t('dashboard.search')"
+            (input)="query.set(search.value)"
+          />
+          @if (!query()) {
+            <app-kbd class="hint" keys="/" aria-hidden="true" />
+          }
+        </label>
+      }
+      <a mat-flat-button routerLink="/jobs/new">+ {{ i18n.t('dashboard.newJob') }}</a>
+    </div>
+  </app-page-header>
+
+  @if (loaded()) {
+    @if (profileEmpty()) {
+      <div class="banner">
+        <p>{{ i18n.t('dashboard.emptyProfile') }}</p>
+        <a mat-stroked-button routerLink="/profile" data-test="fill-profile">{{ i18n.t('dashboard.fillProfile') }}</a>
+      </div>
+    }
+    @if (!jobs().length) {
+      <app-empty-state kind="jobs" [title]="i18n.t('empty.jobs.title')" [text]="i18n.t('empty.jobs.text')">
+        <a mat-flat-button routerLink="/jobs/new">+ {{ i18n.t('dashboard.newJob') }}</a>
+      </app-empty-state>
+    } @else if (!visibleJobs().length) {
+      <app-empty-state
+        kind="search"
+        [title]="i18n.t('dashboard.noMatches', { query: query().trim() })"
+        [text]="i18n.t('empty.search.text')"
+      >
+        <button mat-stroked-button type="button" (click)="query.set('')">{{ i18n.t('dashboard.clearSearch') }}</button>
+      </app-empty-state>
+    } @else {
+      <ul class="jobs">
+        @for (job of visibleJobs(); track job.id) {
+          <li class="job" data-test="job">
+            <div class="row">
+              <div class="main">
+                <div class="heading">
+                  <h2 class="title" [attr.title]="job.title || null">{{ job.title || i18n.t('profile.untitled') }}</h2>
+                  @if (job.language) {
+                    <span class="language">{{ job.language }}</span>
+                  }
+                </div>
+                <p class="meta">
+                  @if (job.company) {
+                    <span>{{ job.company }}</span>
+                    <span aria-hidden="true"> · </span>
+                  }
+                  <span class="date">{{ job.createdAt | date: 'mediumDate' }}</span>
+                </p>
+              </div>
+              <app-status-pill [tone]="resumesOf(job.id).length ? 'accent' : 'neutral'">
+                {{ resumeCount(resumesOf(job.id).length) }}
+              </app-status-pill>
+              <a class="review" mat-stroked-button [routerLink]="['/jobs', job.id, 'review']">{{ i18n.t('dashboard.review') }}</a>
+              <button
+                mat-icon-button
+                type="button"
+                class="more"
+                [matMenuTriggerFor]="menu"
+                [attr.aria-label]="i18n.t('dashboard.actions')"
+              >
+                <mat-icon aria-hidden="true">more_horiz</mat-icon>
+              </button>
+              <mat-menu #menu="matMenu" xPosition="before">
+                <button mat-menu-item type="button" data-test="delete-job" (click)="deleteJob(job)">
+                  <mat-icon aria-hidden="true">delete</mat-icon>
+                  <span>{{ i18n.t('common.remove') }}</span>
+                </button>
+              </mat-menu>
+            </div>
+            @for (resume of resumesOf(job.id); track resume.id) {
+              <div class="resume" data-test="resume">
+                <mat-icon class="doc" aria-hidden="true">description</mat-icon>
+                <span class="resume-label">
+                  {{ i18n.t('dashboard.resume') }} {{ resume.language }} ·
+                  <span class="date">{{ resume.createdAt | date: 'short' }}</span>
+                </span>
+                <button type="button" class="download" (click)="download(resume)">
+                  <mat-icon aria-hidden="true">download</mat-icon>
+                  {{ i18n.t('dashboard.download') }}
+                </button>
+                <button
+                  mat-icon-button
+                  type="button"
+                  class="remove-resume"
+                  [attr.aria-label]="i18n.t('common.remove')"
+                  (click)="deleteResume(resume)"
+                >
+                  <mat-icon aria-hidden="true">delete_outline</mat-icon>
+                </button>
+              </div>
+            }
+          </li>
+        }
+      </ul>
+    }
+  } @else if (loadFailed()) {
+    <div role="alert">
+      <app-empty-state kind="error" [title]="i18n.t('empty.error.title')" [text]="i18n.t('common.loadFailed')">
+        <button mat-stroked-button type="button" data-test="retry" (click)="load()">{{ i18n.t('common.retry') }}</button>
+      </app-empty-state>
+    </div>
+  } @else {
+    <div role="status">
+      <span class="visually-hidden">{{ i18n.t('common.loading') }}</span>
+      <app-skeleton shape="block" height="72px" [lines]="4" />
+    </div>
+  }
+</div>
