@@ -1,6 +1,8 @@
 // A PT/EN style segmented control made of a `mat-button-toggle-group`: a track on --app-subtle
-// with the active option raised on --app-surface. Each option is 40 px high. Apply it with
-// `@include segmented.segmented;` on the group's class.
+// with the active option on --app-accent-soft, outlined 1 px in --app-accent and set in weight 600.
+// A fill alone is not enough: no token pair differs from the track by more than 1.13:1, so the
+// outline is the cue that meets WCAG 1.4.11 (accent on the track: 4.99:1 light, 8.14:1 dark).
+// Each option is 40 px high. Apply it with `@include segmented.segmented;` on the group's class.
 @use '@angular/material' as mat;
 
 @mixin segmented {
@@ -15,8 +17,8 @@
       divider-color: transparent,
       background-color: transparent,
       text-color: var(--app-text),
-      selected-state-background-color: var(--app-surface),
-      selected-state-text-color: var(--app-text),
+      selected-state-background-color: var(--app-accent-soft),
+      selected-state-text-color: var(--app-on-accent-soft),
       state-layer-color: var(--app-text),
       label-text-weight: 500,
     )
@@ -29,6 +31,7 @@
   }
 
   .mat-button-toggle-checked {
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+    box-shadow: inset 0 0 0 1px var(--app-accent);
+    --mat-button-toggle-label-text-weight: 600;
   }
 }

@@ -142,6 +142,19 @@ describe('JobReview', () => {
     expect(names).toEqual([expect.stringMatching(/^Move up: /), expect.stringMatching(/^Move down: /)]);
   });
 
+  it('draws the selected language apart from the other one by more than a fill', async () => {
+    const fixture = await render();
+    const element: HTMLElement = fixture.nativeElement;
+    const [checked, other] = [
+      element.querySelector<HTMLElement>('mat-button-toggle.mat-button-toggle-checked')!,
+      element.querySelector<HTMLElement>('mat-button-toggle:not(.mat-button-toggle-checked)')!,
+    ];
+
+    expect(checked.textContent).toContain('EN');
+    expect(getComputedStyle(checked).boxShadow).toContain('var(--app-accent)');
+    expect(getComputedStyle(other).boxShadow).not.toContain('var(--app-accent)');
+  });
+
   it('marks matched skills with a check, not only colour', async () => {
     const fixture = await render();
     const chips = [...(fixture.nativeElement as HTMLElement).querySelectorAll('[data-test="matched"] mat-chip')];
