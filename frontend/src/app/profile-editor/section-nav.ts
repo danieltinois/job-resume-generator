@@ -6,6 +6,7 @@ export interface SectionStatus {
   key: ProfileSection;
   label: string;
   missingEnglish: number;
+  /** Touched and invalid: shown as a red dot and in text. */
   invalid: boolean;
 }
 
@@ -16,9 +17,12 @@ export interface SectionStatus {
   template: `
     <nav [attr.aria-label]="i18n.t('profile.title')">
       @for (section of sections(); track section.key) {
-        <a [href]="'#' + section.key" [attr.data-section]="section.key" [class.invalid]="section.invalid"
-          (click)="jump($event, section.key)">
-          <span>{{ section.label }}</span>
+        <a [href]="'#' + section.key" [attr.data-section]="section.key" (click)="jump($event, section.key)">
+          <span class="label">{{ section.label }}</span>
+          @if (section.invalid) {
+            <span class="dot" aria-hidden="true"></span>
+            <span class="visually-hidden">{{ i18n.t('profile.invalid') }}</span>
+          }
           @if (section.missingEnglish > 0) {
             <span class="badge" aria-hidden="true">{{ section.missingEnglish }}</span>
             <span class="visually-hidden">{{ i18n.t('profile.missingEn', { count: section.missingEnglish }) }}</span>
@@ -28,35 +32,64 @@ export interface SectionStatus {
     </nav>
   `,
   styles: `
+    /* A strip that scrolls sideways on narrow screens; a sticky column from 1024 px. The padding keeps focus rings inside the scroll area. */
     nav {
       display: flex;
-      flex-direction: column;
-      gap: 2px;
-      position: sticky;
-      top: 16px;
+      gap: 4px;
+      margin: -4px -4px 12px;
+      padding: 4px;
+      overflow-x: auto;
     }
     a {
+      position: relative;
       display: flex;
-      justify-content: space-between;
-      padding: 8px 12px;
+      flex: none;
+      align-items: center;
+      gap: 8px;
+      box-sizing: border-box;
+      min-height: 40px;
+      padding: 0 12px;
       border-radius: 8px;
-      color: inherit;
+      color: var(--app-text);
       text-decoration: none;
+      white-space: nowrap;
+      transition: background-color 150ms ease;
     }
-    a:hover,
-    a:focus-visible {
-      background: var(--mat-sys-surface-container-high);
+    a:hover {
+      background: var(--app-subtle);
     }
-    a.invalid {
-      color: var(--mat-sys-error);
+    .label {
+      flex: 1;
     }
+    /* Invalid sections get a red dot; the visually hidden text says the same for everyone else. */
+    .dot {
+      flex: none;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--app-danger);
+    }
+    /* Amber count of text still missing in English. */
     .badge {
       min-width: 20px;
       padding: 0 6px;
       border-radius: 10px;
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      line-height: 20px;
       text-align: center;
-      background: var(--mat-sys-tertiary-container);
-      color: var(--mat-sys-on-tertiary-container);
+      background: var(--app-warn-soft);
+      color: var(--app-on-warn-soft);
+    }
+    @media (min-width: 1024px) {
+      nav {
+        position: sticky;
+        top: 24px;
+        flex-direction: column;
+        margin: 0;
+        padding: 0;
+        overflow-x: visible;
+      }
     }
   `,
 })

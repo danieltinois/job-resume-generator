@@ -62,6 +62,8 @@ export const pt = {
   'profile.section.projects': 'Projetos',
   'profile.section.education': 'Formação',
   'profile.section.languages': 'Idiomas',
+  'profile.actions': 'Ações',
+  'profile.invalid': 'Com erros',
   'profile.missingEn': '{count} sem inglês',
   'profile.ptReference': 'Em português:',
   'profile.untitled': '(sem nome)',

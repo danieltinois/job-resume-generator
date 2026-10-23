@@ -1,34 +1,112 @@
-.layout {
-  display: grid;
-  grid-template-columns: 220px minmax(0, 1fr);
-  gap: 24px;
-  max-width: 1100px;
+@use '../../styles/segmented';
+
+:host {
+  display: block;
+}
+
+.page {
+  max-width: 1040px;
   margin: 0 auto;
-  padding: 16px;
+  padding: 32px 24px;
 }
 
-@media (max-width: 800px) {
-  .layout {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  aside {
-    display: none;
-  }
-}
-
-.page-header {
+.header-actions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
   flex-wrap: wrap;
+  gap: 8px 12px;
 }
 
-section {
-  scroll-margin-top: 16px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid var(--mat-sys-outline-variant);
+// The save status is a live region. Before the first edit it is empty and shows nothing.
+.status.idle {
+  padding: 0;
+  border-color: transparent;
+  background: transparent;
+}
+
+// The check after "Saved" is decoration: the empty alternative text keeps it out of the spoken status.
+.status.saved::after {
+  content: '✓';
+  content: '✓' / '';
+  margin-left: 4px;
+}
+
+// Long messages ("Could not save. ...") wrap instead of overflowing a phone.
+.status {
+  max-width: 100%;
+  white-space: normal;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0 32px;
+}
+
+.content {
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .layout {
+    grid-template-columns: 200px minmax(0, 1fr);
+  }
+}
+
+// The PT/EN editing switch stays in view while a long form scrolls. Below 768 px the shell's
+// 56 px top bar is sticky too, so it sits underneath it. Material buttons give their label z-index 1,
+// so the bar needs more to stay above the form as it scrolls.
+.mode-bar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 8px 0;
+  background: var(--app-bg);
+}
+
+@media (max-width: 767px) {
+  .mode-bar {
+    top: 56px;
+  }
+
+  .card {
+    scroll-margin-top: 120px;
+  }
+}
+
+.mode-label {
+  color: var(--app-text);
+  font-weight: 500;
+}
+
+.mode {
+  @include segmented.segmented;
+}
+
+// One card per section.
+.card {
+  scroll-margin-top: 72px;
+  margin-bottom: 16px;
+  padding: 20px;
+  border: 1px solid var(--app-border);
+  border-radius: 12px;
+  background: var(--app-surface);
+
+  > h2 {
+    margin: 0 0 16px;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 24px;
+    letter-spacing: -0.01em;
+  }
+}
+
+// Outlined fields have no reserved error line (dynamic subscript), so each one carries its own gap.
+mat-form-field {
   margin-bottom: 16px;
 }
 
@@ -41,10 +119,14 @@ section {
 .item {
   display: flex;
   flex-direction: column;
-  padding: 12px;
   margin-bottom: 12px;
-  border: 1px solid var(--mat-sys-outline-variant);
-  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+
+  > button {
+    align-self: flex-start;
+  }
 }
 
 .item.row {
@@ -61,18 +143,6 @@ section {
 }
 
 .loading {
-  text-align: center;
-  margin-top: 48px;
-}
-
-.spacer {
-  flex: 1;
-}
-
-.status {
-  color: var(--mat-sys-on-surface-variant);
-}
-
-.status.problem {
-  color: var(--mat-sys-error);
+  display: flex;
+  flex-direction: column;
 }

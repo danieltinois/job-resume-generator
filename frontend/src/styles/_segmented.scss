@@ -1,0 +1,34 @@
+// A PT/EN style segmented control made of a `mat-button-toggle-group`: a track on --app-subtle
+// with the active option raised on --app-surface. Each option is 40 px high. Apply it with
+// `@include segmented.segmented;` on the group's class.
+@use '@angular/material' as mat;
+
+@mixin segmented {
+  padding: 2px;
+  border: 0;
+  background: var(--app-subtle);
+
+  @include mat.button-toggle-overrides(
+    (
+      shape: 8px,
+      height: 40px,
+      divider-color: transparent,
+      background-color: transparent,
+      text-color: var(--app-text),
+      selected-state-background-color: var(--app-surface),
+      selected-state-text-color: var(--app-text),
+      state-layer-color: var(--app-text),
+      label-text-weight: 500,
+    )
+  );
+
+  mat-button-toggle {
+    min-width: 48px;
+    border-radius: 6px;
+    transition: background-color 150ms ease;
+  }
+
+  .mat-button-toggle-checked {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  }
+}

@@ -63,6 +63,8 @@ export const en: Record<TranslationKey, string> = {
   'profile.section.projects': 'Projects',
   'profile.section.education': 'Education',
   'profile.section.languages': 'Languages',
+  'profile.actions': 'Actions',
+  'profile.invalid': 'Has errors',
   'profile.missingEn': '{count} missing English',
   'profile.ptReference': 'In Portuguese:',
   'profile.untitled': '(untitled)',

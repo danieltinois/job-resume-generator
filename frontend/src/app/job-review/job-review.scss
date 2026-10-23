@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@use '../../styles/segmented';
 
 :host {
   display: block;
@@ -70,35 +71,8 @@ h1 {
   gap: 8px 12px;
 }
 
-// A track on --app-subtle with the active option raised on --app-surface. Each option is 40 px high.
 .language {
-  padding: 2px;
-  border: 0;
-  background: var(--app-subtle);
-
-  @include mat.button-toggle-overrides(
-    (
-      shape: 8px,
-      height: 40px,
-      divider-color: transparent,
-      background-color: transparent,
-      text-color: var(--app-text),
-      selected-state-background-color: var(--app-surface),
-      selected-state-text-color: var(--app-text),
-      state-layer-color: var(--app-text),
-      label-text-weight: 500,
-    )
-  );
-
-  mat-button-toggle {
-    min-width: 48px;
-    border-radius: 6px;
-    transition: background-color 150ms ease;
-  }
-
-  .mat-button-toggle-checked {
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
-  }
+  @include segmented.segmented;
 }
 
 .save {

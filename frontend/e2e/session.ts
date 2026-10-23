@@ -30,7 +30,8 @@ export async function signInWithProfile(page: Page): Promise<{ reviewUrl: string
   await expect(page.getByRole('heading', { name: 'My jobs' })).toBeVisible();
 
   await page.goto('/profile');
-  await page.getByRole('button', { name: 'Import profile.yaml' }).click();
+  await page.getByRole('button', { name: 'Actions' }).click();
+  await page.getByRole('menuitem', { name: 'Import profile.yaml' }).click();
   const dialog = page.getByRole('dialog');
   await dialog.locator('input[type=file]').setInputFiles(fixture('profile/profile.example.yaml'));
   await dialog.getByRole('radio', { name: 'EN' }).click();

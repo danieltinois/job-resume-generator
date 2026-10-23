@@ -51,6 +51,24 @@ import { I18n } from '../core/i18n/i18n';
       }
     </mat-dialog-actions>
   `,
+  styles: `
+    mat-dialog-content {
+      color: var(--app-muted);
+    }
+    p {
+      margin: 0 0 12px;
+    }
+    .file {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+      color: var(--app-text);
+    }
+    #import-language {
+      color: var(--app-text);
+    }
+  `,
 })
 export class ImportDialog {
   protected readonly i18n = inject(I18n);

@@ -63,8 +63,8 @@ import { SkillChips } from './skill-chips';
       gap: 8px;
       align-items: flex-start;
       padding: 8px 0;
-      border-bottom: 1px solid var(--mat-sys-outline-variant);
-      background: var(--mat-sys-surface);
+      border-bottom: 1px solid var(--app-border);
+      background: var(--app-surface);
     }
     .handle {
       cursor: grab;
@@ -80,8 +80,9 @@ import { SkillChips } from './skill-chips';
       flex-direction: column;
     }
     .hint {
-      font-size: 0.85em;
-      color: var(--mat-sys-on-surface-variant);
+      margin: 12px 0;
+      font-size: 13px;
+      color: var(--app-muted);
     }
   `,
 })

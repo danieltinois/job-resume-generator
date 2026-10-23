@@ -61,10 +61,13 @@ import type { ExperienceForm } from './profile-form';
   `,
   styles: `
     .card {
-      border: 1px solid var(--mat-sys-outline-variant);
-      border-radius: 12px;
+      border: 1px solid var(--app-border);
+      border-radius: 8px;
       margin-bottom: 12px;
       padding: 4px 12px;
+    }
+    mat-form-field {
+      margin-bottom: 16px;
     }
     header {
       display: flex;

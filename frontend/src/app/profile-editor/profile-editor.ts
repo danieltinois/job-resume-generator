@@ -6,7 +6,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatMenuModule } from '@angular/material/menu';
 import { catchError, firstValueFrom, of } from 'rxjs';
 import type { Profile, StoredProfile, TechTerm } from '../core/api/types';
 import { AuthStore } from '../core/auth/auth-store';
@@ -15,6 +17,10 @@ import { fieldError } from '../core/forms/field-error';
 import { I18n } from '../core/i18n/i18n';
 import { Shortcuts } from '../core/shortcuts/shortcuts';
 import { ConfirmDialog } from '../ui/confirm-dialog';
+import { Kbd } from '../ui/kbd';
+import { PageHeader } from '../ui/page-header';
+import { Skeleton } from '../ui/skeleton';
+import { StatusPill } from '../ui/status-pill';
 import { Autosave, type ConflictChoice, type SaveStatus } from './autosave';
 import { ConflictDialog } from './conflict-dialog';
 import { ExperienceCard } from './experience-card';
@@ -52,7 +58,13 @@ const SECTIONS: ProfileSection[] = [
     MatButtonModule,
     MatButtonToggleModule,
     MatFormFieldModule,
+    MatIconModule,
     MatInputModule,
+    MatMenuModule,
+    PageHeader,
+    StatusPill,
+    Kbd,
+    Skeleton,
     LocalizedField,
     SkillChips,
     ExperienceCard,
@@ -81,6 +93,20 @@ export class ProfileEditor {
   readonly value = signal<Profile | null>(null);
 
   protected readonly status = computed<SaveStatus>(() => this.current()?.status() ?? 'idle');
+  protected readonly statusTone = computed<'neutral' | 'accent' | 'warn' | 'danger'>(() => {
+    switch (this.status()) {
+      case 'saved':
+        return 'accent';
+      case 'unsaved':
+        return 'warn';
+      case 'invalid':
+      case 'error':
+      case 'conflict':
+        return 'danger';
+      default:
+        return 'neutral';
+    }
+  });
   protected readonly mode = signal<EditLanguage>('pt');
   protected readonly expanded = signal<string | null>(null);
   protected readonly terms = toSignal(
@@ -168,7 +194,9 @@ export class ProfileEditor {
   }
 
   protected async openImport(): Promise<void> {
-    const imported = await firstValueFrom(this.dialog.open(ImportDialog, { width: '520px' }).afterClosed());
+    const imported = await firstValueFrom(
+      this.dialog.open(ImportDialog, { width: '480px', maxWidth: '92vw' }).afterClosed(),
+    );
     if (imported) {
       // A save still in flight would bump the version under the import's save and fake a conflict.
       await this.current()?.settle();
@@ -185,7 +213,11 @@ export class ProfileEditor {
 
   private async askConflict(): Promise<ConflictChoice> {
     const choice = await firstValueFrom(
-      this.dialog.open<ConflictDialog, unknown, ConflictChoice>(ConflictDialog, { disableClose: true }).afterClosed(),
+      this.dialog.open<ConflictDialog, unknown, ConflictChoice>(ConflictDialog, {
+        disableClose: true,
+        width: '480px',
+        maxWidth: '92vw',
+      }).afterClosed(),
     );
     return choice ?? 'keep';
   }

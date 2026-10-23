@@ -1,12 +1,16 @@
 import { OverlayContainer } from '@angular/cdk/overlay';
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { MatDialog } from '@angular/material/dialog';
+import { MatMenuHarness } from '@angular/material/menu/testing';
 import { of } from 'rxjs';
 import type { Profile } from '../core/api/types';
 import { AuthStore } from '../core/auth/auth-store';
 import example from '../../testing/profile-example.json';
 import { apiTestProviders } from '../auth/testing';
+import { Kbd } from '../ui/kbd';
 import { dialogOverlay, confirmDialogButton } from '../ui/testing';
 import { ProfileEditor } from './profile-editor';
 
@@ -27,6 +31,70 @@ describe('ProfileEditor', () => {
     fixture.detectChanges();
     return fixture;
   }
+
+  async function openActionsMenu(fixture: Awaited<ReturnType<typeof render>>): Promise<MatMenuHarness> {
+    const menu = await TestbedHarnessEnvironment.loader(fixture).getHarness(MatMenuHarness);
+    await menu.open();
+    return menu;
+  }
+
+  it('shows the save status as a pill with the save shortcut', async () => {
+    const fixture = await render();
+    const element = fixture.nativeElement as HTMLElement;
+
+    const status = element.querySelector('[data-test="save-status"]')!;
+
+    expect(status.tagName).toBe('APP-STATUS-PILL');
+    expect(status.getAttribute('role')).toBe('status');
+    const hint = status.nextElementSibling!;
+    expect(hint.tagName).toBe('APP-KBD');
+    expect(fixture.debugElement.query(By.directive(Kbd)).componentInstance.keys()).toBe('Mod+S');
+  });
+
+  it('moves import and export into the actions menu', async () => {
+    const fixture = await render();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('button[data-test="export"]')).toBeNull();
+
+    const menu = await openActionsMenu(fixture);
+
+    const items = await menu.getItems();
+    expect(await Promise.all(items.map((item) => item.getText()))).toEqual([
+      expect.stringContaining('Import profile.yaml'),
+      expect.stringContaining('Export JSON'),
+    ]);
+    expect(dialogOverlay().querySelector('button[data-test="export"]')).not.toBeNull();
+  });
+
+  it('marks invalid sections in text, not only colour', async () => {
+    const fixture = await render();
+    const personal = fixture.componentInstance.form()!.controls.personal;
+    personal.markAllAsTouched();
+    personal.controls.name.setValue('');
+    fixture.detectChanges();
+
+    const link = (fixture.nativeElement as HTMLElement).querySelector('[data-section="personal"]')!;
+
+    expect(link.querySelector('.visually-hidden')?.textContent).toContain('Has errors');
+    expect(link.querySelector('.dot')?.getAttribute('aria-hidden')).toBe('true');
+    const valid = (fixture.nativeElement as HTMLElement).querySelector('[data-section="summary"]')!;
+    expect(valid.querySelector('.visually-hidden')).toBeNull();
+  });
+
+  it('shows skeletons while the profile loads', () => {
+    TestBed.configureTestingModule({ imports: [ProfileEditor], providers: apiTestProviders });
+    backend = TestBed.inject(HttpTestingController);
+    TestBed.inject(AuthStore).acceptToken('token');
+    const fixture = TestBed.createComponent(ProfileEditor);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(element.querySelector('app-skeleton')).not.toBeNull();
+    expect(element.querySelector('[role="status"]')?.textContent).toContain('Loading');
+    expect(element.querySelector('form')).toBeNull();
+    backend.expectOne('/api/profile');
+    backend.expectOne('/api/tech-terms');
+  });
 
   it('counts missing English per section in the navigation', async () => {
     const profile = structuredClone(example) as Profile;
@@ -68,7 +136,8 @@ describe('ProfileEditor', () => {
     URL.createObjectURL = vi.fn(() => 'blob:profile');
     URL.revokeObjectURL = vi.fn();
 
-    fixture.nativeElement.querySelector('button[data-test="export"]').click();
+    await openActionsMenu(fixture);
+    dialogOverlay().querySelector<HTMLButtonElement>('button[data-test="export"]')!.click();
 
     backend.expectOne('/api/profile/export').flush(new Blob(['{}']));
     await vi.waitFor(() => expect(URL.createObjectURL).toHaveBeenCalled());

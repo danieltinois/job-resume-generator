@@ -41,10 +41,14 @@ export type EditLanguage = 'pt' | 'en';
     }
   `,
   styles: `
+    /* Outlined fields have no reserved error line (dynamic subscript), so each one carries its own gap. */
+    mat-form-field {
+      margin-bottom: 16px;
+    }
     .reference {
-      margin: -12px 0 12px;
-      font-size: 0.85em;
-      color: var(--mat-sys-on-surface-variant);
+      margin: -8px 0 16px;
+      font-size: 13px;
+      color: var(--app-muted);
     }
   `,
 })

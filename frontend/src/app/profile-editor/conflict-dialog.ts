@@ -21,6 +21,11 @@ import type { ConflictChoice } from './autosave';
       </button>
     </mat-dialog-actions>
   `,
+  styles: `
+    mat-dialog-content {
+      color: var(--app-muted);
+    }
+  `,
 })
 export class ConflictDialog {
   protected readonly i18n = inject(I18n);

@@ -37,7 +37,8 @@ test('registers, imports a profile, tailors a resume and downloads the PDF', asy
 
   await test.step('import the example profile', async () => {
     await page.goto('/profile');
-    await page.getByRole('button', { name: 'Import profile.yaml' }).click();
+    await page.getByRole('button', { name: 'Actions' }).click();
+    await page.getByRole('menuitem', { name: 'Import profile.yaml' }).click();
     const dialog = page.getByRole('dialog');
     await dialog.locator('input[type=file]').setInputFiles(fixture('profile/profile.example.yaml'));
     await dialog.getByRole('radio', { name: 'EN' }).click();
