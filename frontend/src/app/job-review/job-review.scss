@@ -225,6 +225,11 @@ mat-chip {
   padding-top: 4px;
 }
 
+// The arrows keep their width; the title wraps instead (a squeezed .move let its buttons spill out of the card).
+.exp-head .move {
+  flex: none;
+}
+
 .exp-title {
   display: flex;
   flex-wrap: wrap;

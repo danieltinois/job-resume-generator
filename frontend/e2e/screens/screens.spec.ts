@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { signInWithProfile } from '../session';
-import { settleAnimations } from '../settle';
+import { expectScheme, settleAnimations } from '../settle';
 
 const sizes = [
   { width: 1280, height: 800 },
@@ -15,6 +15,15 @@ interface Screen {
   name: string;
   url: string;
   ready: (page: Page) => Promise<unknown>;
+}
+
+/** A page wider than the viewport scrolls sideways on a phone, and full-page shots grow wider. */
+async function expectNoHorizontalScroll(page: Page, label: string) {
+  const { scrollWidth, innerWidth } = await page.evaluate(() => ({
+    scrollWidth: document.documentElement.scrollWidth,
+    innerWidth: window.innerWidth,
+  }));
+  expect.soft(scrollWidth, `${label}: page width`).toBeLessThanOrEqual(innerWidth);
 }
 
 // Screens share one signed-in page, so they run in order and stop together if the sign-in fails.
@@ -70,15 +79,20 @@ for (const size of sizes) {
         viewport: size,
         colorScheme: scheme,
       });
-      const signedOut = await context.newPage();
-      await signedOut.goto('/login');
-      await expect(signedOut.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible();
-      await settleAnimations(signedOut);
-      await signedOut.screenshot({
-        path: join(outDir, `sign-in-${size.width}-${scheme}.png`),
-        fullPage: true,
-      });
-      await context.close();
+      try {
+        const signedOut = await context.newPage();
+        await signedOut.goto('/login');
+        await expect(signedOut.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible();
+        await settleAnimations(signedOut);
+        await expectScheme(signedOut, scheme, 'sign-in');
+        await expectNoHorizontalScroll(signedOut, 'sign-in');
+        await signedOut.screenshot({
+          path: join(outDir, `sign-in-${size.width}-${scheme}.png`),
+          fullPage: true,
+        });
+      } finally {
+        await context.close();
+      }
     });
 
     test(`signed-in screens at ${size.width}px, ${scheme}`, async () => {
@@ -88,6 +102,8 @@ for (const size of sizes) {
         await page.goto(screen.url);
         await screen.ready(page);
         await settleAnimations(page);
+        await expectScheme(page, scheme, screen.name);
+        await expectNoHorizontalScroll(page, screen.name);
         await page.screenshot({
           path: join(outDir, `${screen.name}-${size.width}-${scheme}.png`),
           fullPage: true,
