@@ -6,6 +6,8 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: './e2e',
+  // Screenshots have their own config (npm run screens).
+  testIgnore: 'screens/**',
   timeout: 120_000,
   expect: { timeout: 15_000 },
   forbidOnly: !!process.env['CI'],

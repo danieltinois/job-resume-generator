@@ -9,7 +9,8 @@
     "test": "ng test",
     "lint": "ng lint",
     "api:types": "npx -y -p openapi-typescript@7.13.0 -p typescript@5.9.3 openapi-typescript ../docs/api/openapi.json -o src/app/core/api/schema.d.ts",
-    "e2e": "tsc -p tsconfig.e2e.json && playwright test"
+    "e2e": "tsc -p tsconfig.e2e.json && playwright test",
+    "screens": "playwright test -c playwright.screens.config.ts"
   },
   "private": true,
   "packageManager": "npm@10.9.9",

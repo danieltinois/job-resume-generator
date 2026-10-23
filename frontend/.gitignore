@@ -46,3 +46,6 @@ Thumbs.db
 # Playwright
 /test-results
 /playwright-report
+
+# Review screenshots (npm run screens)
+/screens

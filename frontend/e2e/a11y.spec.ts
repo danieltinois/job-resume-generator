@@ -2,27 +2,29 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { watchCsp } from './csp';
 import { signInWithProfile } from './session';
+import { settleAnimations } from './settle';
 
 const schemes = ['light', 'dark'] as const;
 
+/** The `--app-bg` token of each scheme, as the browser computes it for `body`. */
+const background = { light: 'rgb(250, 250, 250)', dark: 'rgb(9, 9, 11)' } as const;
+
 /** Fails on any serious or critical WCAG 2.x A/AA violation on the page as currently shown. */
-async function expectAccessible(page: Page, screen: string, scheme: string) {
-  // Switching the scheme starts 150 ms colour transitions; axe must read the settled colours, not a mid-fade frame.
-  await page.evaluate(() =>
-    Promise.all(
-      document
-        .getAnimations()
-        .filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity)
-        .map((animation) => animation.finished.catch(() => undefined)),
-    ),
-  );
+async function expectAccessible(page: Page, screen: string, scheme: (typeof schemes)[number]) {
+  await settleAnimations(page);
+  // Proves emulateMedia really switched the theme, so axe checked the scheme it is reported under.
+  await expect
+    .soft(page.locator('body'), `${screen} (${scheme}) background`)
+    .toHaveCSS('background-color', background[scheme]);
   const { violations } = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
   const blocking = violations
     .filter((violation) => violation.impact === 'serious' || violation.impact === 'critical')
     .map((violation) => ({
       rule: violation.id,
       impact: violation.impact,
-      nodes: violation.nodes.map((node) => `${node.target.join(' ')} :: ${node.failureSummary ?? ''}`),
+      nodes: violation.nodes.map(
+        (node) => `${node.target.join(' ')} :: ${node.failureSummary ?? ''}`,
+      ),
     }));
   // Soft, so one run lists the violations of every screen and scheme at once.
   expect.soft(blocking, `${screen} (${scheme})`).toEqual([]);
