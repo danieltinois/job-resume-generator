@@ -1,6 +1,6 @@
 # Frontend redesign: a modern SaaS look — design
 
-**Status:** approved in conversation, awaiting written-spec review
+**Status:** approved
 **Date:** 2026-10-20
 **Mockup:** the "Resume Tailor redesign" canvas (dashboard and review in light and dark, sign-in)
 
