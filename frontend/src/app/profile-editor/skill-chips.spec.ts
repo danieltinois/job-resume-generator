@@ -47,4 +47,32 @@ describe('SkillChips', () => {
 
     expect(control.value).toEqual(['PostgreSQL']);
   });
+
+  it('keeps the text input outside the chip grid, whose only children are the chip rows', () => {
+    const { fixture } = render(['Java', 'SQL']);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+
+    const grid = element.querySelector('[role="grid"]')!;
+
+    expect(grid.querySelectorAll('[role="row"]')).toHaveLength(2);
+    expect(grid.querySelector('input')).toBeNull();
+    expect(element.querySelector('input')).not.toBeNull();
+  });
+
+  it('still adds a skill typed in the input when Enter is pressed, and removes one with its button', () => {
+    const { fixture, control } = render(['Java']);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    const input = element.querySelector('input')!;
+
+    input.value = 'Go';
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', keyCode: 13, bubbles: true, cancelable: true }));
+    fixture.detectChanges();
+    expect(control.value).toEqual(['Java', 'Go']);
+    expect(input.value).toBe('');
+
+    element.querySelector<HTMLButtonElement>('button[aria-label="Remove Java"]')!.click();
+    expect(control.value).toEqual(['Go']);
+  });
 });

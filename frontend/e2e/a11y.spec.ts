@@ -5,14 +5,6 @@ import { signInWithProfile } from './session';
 
 const schemes = ['light', 'dark'] as const;
 
-/**
- * Known issue, tracked for the profile editor: Angular Material's chip grid renders its input as a
- * `combobox` inside `role=grid`, which axe reports as aria-required-children. It comes from the
- * markup of the skill chips, not from colour or theme. Only that rule on that element is ignored.
- */
-const isKnownChipGridIssue = (rule: string, target: string) =>
-  rule === 'aria-required-children' && target.endsWith('mat-chip-grid');
-
 /** Fails on any serious or critical WCAG 2.x A/AA violation on the page as currently shown. */
 async function expectAccessible(page: Page, screen: string, scheme: string) {
   // Switching the scheme starts 150 ms colour transitions; axe must read the settled colours, not a mid-fade frame.
@@ -30,11 +22,8 @@ async function expectAccessible(page: Page, screen: string, scheme: string) {
     .map((violation) => ({
       rule: violation.id,
       impact: violation.impact,
-      nodes: violation.nodes
-        .filter((node) => !isKnownChipGridIssue(violation.id, node.target.join(' ')))
-        .map((node) => `${node.target.join(' ')} :: ${node.failureSummary ?? ''}`),
-    }))
-    .filter((violation) => violation.nodes.length > 0);
+      nodes: violation.nodes.map((node) => `${node.target.join(' ')} :: ${node.failureSummary ?? ''}`),
+    }));
   // Soft, so one run lists the violations of every screen and scheme at once.
   expect.soft(blocking, `${screen} (${scheme})`).toEqual([]);
 }

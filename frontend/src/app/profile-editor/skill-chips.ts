@@ -31,20 +31,31 @@ const normalize = (value: string): string =>
             <button matChipRemove type="button" [attr.aria-label]="i18n.t('common.remove') + ' ' + skill">✕</button>
           </mat-chip-row>
         }
-        <input
-          #entry
-          [matChipInputFor]="grid"
-          [matAutocomplete]="auto"
-          (input)="query.set(entry.value)"
-          (matChipInputTokenEnd)="add($event.value); entry.value = ''"
-        />
       </mat-chip-grid>
+      <!-- Outside the grid on purpose: a role=grid may only own rows, and the combobox input is not one. -->
+      <input
+        #entry
+        class="entry"
+        [matChipInputFor]="grid"
+        [matAutocomplete]="auto"
+        (input)="query.set(entry.value)"
+        (matChipInputTokenEnd)="add($event.value); entry.value = ''"
+      />
       <mat-autocomplete #auto="matAutocomplete" (optionSelected)="add($event.option.value); entry.value = ''">
         @for (option of options(); track option) {
           <mat-option [value]="option">{{ option }}</mat-option>
         }
       </mat-autocomplete>
     </mat-form-field>
+  `,
+  styles: `
+    mat-form-field {
+      margin-bottom: 16px;
+    }
+    /* The chips wrap in their own block and the input sits under them, full width. */
+    .entry {
+      width: 100%;
+    }
   `,
 })
 export class SkillChips {
