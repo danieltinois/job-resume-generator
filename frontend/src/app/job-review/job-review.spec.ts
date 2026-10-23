@@ -141,4 +141,45 @@ describe('JobReview', () => {
     const names = [...skill.querySelectorAll('button')].map((button) => button.getAttribute('aria-label'));
     expect(names).toEqual([expect.stringMatching(/^Move up: /), expect.stringMatching(/^Move down: /)]);
   });
+
+  it('marks matched skills with a check, not only colour', async () => {
+    const fixture = await render();
+    const chips = [...(fixture.nativeElement as HTMLElement).querySelectorAll('[data-test="matched"] mat-chip')];
+
+    expect(chips.length).toBe(2);
+    for (const chip of chips) {
+      expect(chip.querySelector('mat-icon')?.textContent?.trim()).toBe('check');
+    }
+  });
+
+  it('shows the relevance as a bar with the number for screen readers', async () => {
+    const fixture = await render();
+    const score = (fixture.nativeElement as HTMLElement).querySelector('.score')!;
+
+    expect(score.querySelector('.visually-hidden')?.textContent).toContain('Relevance score');
+    expect(score.querySelector('[aria-hidden="true"]')).not.toBeNull();
+    expect(score.textContent).toContain('4');
+    expect(score.querySelector<HTMLElement>('.fill')?.style.width).toBe('80%');
+  });
+
+  it('shows a skeleton until the preview renders', async () => {
+    const fixture = await render();
+    const element: HTMLElement = fixture.nativeElement;
+
+    expect(element.querySelector('.preview app-skeleton')).not.toBeNull();
+    expect(element.querySelector('.preview iframe')).toBeNull();
+  });
+
+  it('keeps move buttons reachable by keyboard', async () => {
+    const fixture = await render();
+    const buttons = [...(fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>('.achievement .move button')];
+
+    expect(buttons.length).toBeGreaterThan(0);
+    for (const button of buttons) {
+      expect(getComputedStyle(button).display).not.toBe('none');
+      expect(button.tabIndex).toBeGreaterThanOrEqual(0);
+    }
+    buttons[0].focus();
+    expect(document.activeElement).toBe(buttons[0]);
+  });
 });

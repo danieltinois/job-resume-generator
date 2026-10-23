@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatIconModule } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { Subject, filter, firstValueFrom, forkJoin, switchMap } from 'rxjs';
@@ -22,12 +23,23 @@ import type {
 import { toProblem } from '../core/api/problem';
 import { downloadBlob } from '../core/download';
 import { I18n } from '../core/i18n/i18n';
+import { EmptyState } from '../ui/empty-state';
+import { Skeleton } from '../ui/skeleton';
 import { Preview } from './preview';
 import { SelectionState } from './selection-state';
 
 @Component({
   selector: 'app-job-review',
-  imports: [RouterLink, MatButtonModule, MatButtonToggleModule, MatCheckboxModule, MatChipsModule],
+  imports: [
+    RouterLink,
+    MatButtonModule,
+    MatButtonToggleModule,
+    MatCheckboxModule,
+    MatChipsModule,
+    MatIconModule,
+    EmptyState,
+    Skeleton,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './job-review.html',
   styleUrl: './job-review.scss',
@@ -129,6 +141,15 @@ export class JobReview implements OnInit {
 
   protected score(achievement: Achievement): number {
     return this.analysis()?.scores?.[achievement.id ?? ''] ?? 0;
+  }
+
+  /** The relevance score as a share of the 0 to 5 scale, for the bar. */
+  protected scorePercent(achievement: Achievement): number {
+    return Math.min(100, Math.max(0, (this.score(achievement) / 5) * 100));
+  }
+
+  protected period(experience: Experience): string {
+    return `${experience.startDate ?? ''} – ${experience.endDate || this.i18n.t('common.current')}`;
   }
 
   protected async save(): Promise<void> {

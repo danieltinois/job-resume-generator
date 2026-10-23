@@ -1,103 +1,368 @@
+@use '@angular/material' as mat;
+
+:host {
+  display: block;
+  // The review screen uses the full width: cancel the padding of the shell's content area.
+  margin: -16px;
+}
+
 .review {
-  display: grid;
-  grid-template-columns: minmax(320px, 2fr) 3fr;
-  gap: 16px;
-  padding: 16px;
-  height: calc(100vh - 64px);
-  box-sizing: border-box;
-}
-
-@media (max-width: 960px) {
-  .review {
-    grid-template-columns: minmax(0, 1fr);
-    height: auto;
-  }
-
-  .preview iframe {
-    height: 80vh;
-  }
-}
-
-.controls {
-  overflow-y: auto;
-  padding-right: 8px;
-}
-
-.preview {
   display: flex;
   flex-direction: column;
+  height: 100vh;
 }
 
-.preview iframe {
-  flex: 1;
-  width: 100%;
-  min-height: 480px;
-  border: 1px solid var(--mat-sys-outline-variant);
-  border-radius: 8px;
+// Sticky top bar: back link, title and company, PT/EN, save.
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  flex: none;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  box-sizing: border-box;
+  min-height: 64px;
+  padding: 8px 20px;
+  border-bottom: 1px solid var(--app-border);
+  background: var(--app-surface);
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  color: var(--app-muted);
+  text-decoration: none;
+  transition: color 150ms ease;
+
+  &:hover {
+    color: var(--app-text);
+  }
+}
+
+.heading {
+  flex: 1 1 200px;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0 10px;
+  min-width: 0;
 }
 
 h1 {
-  margin: 8px 0 0;
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 24px;
+  letter-spacing: -0.01em;
+}
+
+.company {
+  color: var(--app-muted);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+
+// A track on --app-subtle with the active option raised on --app-surface. Each option is 40 px high.
+.language {
+  padding: 2px;
+  border: 0;
+  background: var(--app-subtle);
+
+  @include mat.button-toggle-overrides(
+    (
+      shape: 8px,
+      height: 40px,
+      divider-color: transparent,
+      background-color: transparent,
+      text-color: var(--app-text),
+      selected-state-background-color: var(--app-surface),
+      selected-state-text-color: var(--app-text),
+      state-layer-color: var(--app-text),
+      label-text-weight: 500,
+    )
+  );
+
+  mat-button-toggle {
+    min-width: 48px;
+    border-radius: 6px;
+    transition: background-color 150ms ease;
+  }
+
+  .mat-button-toggle-checked {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  }
+}
+
+.save {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.error {
+  margin: 0;
+  color: var(--app-danger);
+}
+
+.save .error {
+  max-width: 320px;
+  text-align: right;
+}
+
+// Two panes from 1024 px: the controls scroll on their own, the preview stays in view.
+.panes {
+  display: grid;
+  grid-template-columns: 460px minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
+}
+
+.controls,
+.preview {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-sizing: border-box;
+  padding: 16px;
+  border-right: 1px solid var(--app-border);
+}
+
+.card {
+  box-sizing: border-box;
+  padding: 14px 16px;
+  border: 1px solid var(--app-border);
+  border-radius: 12px;
+  background: var(--app-surface);
 }
 
 h2 {
-  font-size: 1.05em;
-  margin: 16px 0 8px;
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 20px;
 }
 
-.meta {
-  color: var(--mat-sys-on-surface-variant);
-  margin: 4px 0;
+h2.spaced {
+  margin-top: 16px;
 }
 
-.row {
+.help {
+  margin: 8px 0 0;
+  color: var(--app-muted);
+  font-size: 13px;
+}
+
+mat-chip-set + .help {
+  margin-top: 8px;
+}
+
+mat-chip {
+  --mat-chip-container-height: 28px;
+  --mat-chip-label-text-size: 13px;
+  --mat-chip-outline-width: 0;
+}
+
+.matched {
+  --mat-chip-elevated-container-color: var(--app-accent-soft);
+  --mat-chip-label-text-color: var(--app-on-accent-soft);
+
+  mat-icon {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+    font-size: 16px;
+    vertical-align: middle;
+  }
+}
+
+.missing {
+  --mat-chip-elevated-container-color: transparent;
+  --mat-chip-label-text-color: var(--app-muted);
+
+  border: 1px dashed var(--app-border-strong);
+}
+
+.note {
+  display: flex;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--app-warn-soft);
+  color: var(--app-on-warn-soft);
+
+  mat-icon {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+  }
+
+  ul {
+    margin: 4px 0 0;
+    padding-left: 18px;
+  }
+}
+
+.section-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  margin-top: 4px;
+
+  h2 {
+    margin: 0;
+  }
+}
+
+.restore {
+  @include mat.button-overrides((text-label-text-color: var(--app-accent)));
 }
 
 .experience {
-  border: 1px solid var(--mat-sys-outline-variant);
-  border-radius: 12px;
-  padding: 8px;
-  margin-bottom: 8px;
+  padding: 4px 16px 8px;
+
+  &.hidden {
+    border-style: dashed;
+    border-color: var(--app-border-strong);
+  }
 }
 
-.experience.hidden {
-  opacity: 0.6;
+.exp-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.exp-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 10px;
+}
+
+.period {
+  color: var(--app-muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.hidden .exp-title strong {
+  color: var(--app-muted);
 }
 
 .achievement {
-  display: flex;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
   gap: 8px;
-  padding: 4px 0 4px 24px;
+  padding: 4px 0;
+  border-top: 1px solid var(--app-border);
+
+  label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    min-height: 40px;
+    padding: 8px 0;
+    box-sizing: border-box;
+    cursor: pointer;
+  }
+
+  input[type='checkbox'] {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    margin: 2px 0 0;
+    accent-color: var(--app-accent);
+  }
 }
 
-.achievement label {
-  flex: 1;
-  display: flex;
-  gap: 8px;
+// Keeps the score column aligned when a bullet is not selected and has no buttons.
+.achievement .move {
+  min-width: 72px;
 }
 
+// A 40 x 4 px bar (score out of 5) with the number below it.
 .score {
-  min-width: 24px;
-  text-align: center;
-  border-radius: 12px;
-  background: var(--mat-sys-tertiary-container);
-  color: var(--mat-sys-on-tertiary-container);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 40px;
+}
+
+.track {
+  display: block;
+  width: 40px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--app-subtle);
+  overflow: hidden;
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--app-accent);
+}
+
+.number {
+  color: var(--app-muted);
+  font-size: 12px;
+  line-height: 16px;
+  font-variant-numeric: tabular-nums;
 }
 
 .move {
   display: inline-flex;
+  min-width: 0;
+
+  @include mat.icon-button-overrides((state-layer-size: 36px, icon-color: var(--app-muted)));
+
+  mat-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+  }
 }
 
-.warnings {
-  margin: 12px 0;
-  padding: 8px 12px;
-  border-radius: 8px;
-  background: var(--mat-sys-secondary-container);
+// Shown on hover and focus, but never removed: the buttons stay in the tab order.
+@media (hover: hover) {
+  .move {
+    opacity: 0;
+    transition: opacity 150ms ease;
+  }
+
+  .achievement:hover .move,
+  .exp-head:hover .move,
+  .move:focus-within {
+    opacity: 1;
+  }
+}
+
+.projects {
+  display: flex;
+  flex-direction: column;
 }
 
 .category {
@@ -108,25 +373,128 @@ h2 {
 .skills {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 6px;
 }
 
 .skill {
   display: inline-flex;
   align-items: center;
-  padding-right: 8px;
-  border-radius: 8px;
-  background: var(--mat-sys-surface-container-high);
+  border: 1px solid var(--app-border);
+  border-radius: 999px;
+  background: var(--app-subtle);
+  color: var(--app-text);
+
+  @include mat.icon-button-overrides((state-layer-size: 40px, icon-color: var(--app-text)));
+
+  mat-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+  }
 }
 
-.save {
+// The preview: the PDF on a white sheet over --app-subtle.
+.preview {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 12px;
-  margin: 24px 0;
+  box-sizing: border-box;
+  padding: 20px 24px 32px;
+  background: var(--app-subtle);
+
+  > * {
+    width: min(100%, 540px);
+  }
 }
 
+// On --app-subtle, small text is --app-text: the muted colour is too faint there.
+.preview-meta {
+  margin: 0;
+  color: var(--app-text);
+  font-size: 13px;
+}
+
+.saved {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  box-sizing: border-box;
+  padding: 8px 8px 8px 14px;
+  border-radius: 12px;
+  background: var(--app-accent-soft);
+  color: var(--app-on-accent-soft);
+
+  [role='status'] {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  mat-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+  }
+}
+
+.sheet {
+  box-sizing: border-box;
+  aspect-ratio: 210 / 297;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #fff;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.12),
+    0 8px 24px rgba(0, 0, 0, 0.08);
+
+  iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+}
+
+.rendering {
+  padding: 40px 36px;
+}
+
+.failed,
 .loading {
-  text-align: center;
-  margin-top: 48px;
+  max-width: 560px;
+  margin: 48px auto;
+  padding: 0 16px;
+}
+
+// Below 1024 px the panes stack, the preview second, and the page scrolls as a whole.
+@media (max-width: 1023px) {
+  .review {
+    display: block;
+    height: auto;
+  }
+
+  .panes {
+    display: block;
+  }
+
+  .controls {
+    overflow: visible;
+    border-right: 0;
+    border-bottom: 1px solid var(--app-border);
+  }
+
+  .preview {
+    overflow: visible;
+  }
+}
+
+// Phones: the shell's own 56 px bar is sticky too, so this one sits below it.
+@media (max-width: 767px) {
+  .bar {
+    top: 56px;
+    padding: 8px 16px;
+  }
 }
