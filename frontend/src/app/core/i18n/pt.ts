@@ -187,6 +187,7 @@ export const pt = {
   'common.close': 'Fechar',
   'nav.newJob': 'Nova vaga',
   'nav.menu': 'Menu de navegação',
+  'nav.primary': 'Navegação principal',
   'nav.shortcuts': 'Atalhos de teclado',
   'theme.label': 'Tema',
   'theme.light': 'Claro',

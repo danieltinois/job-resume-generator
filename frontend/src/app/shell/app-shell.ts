@@ -14,8 +14,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSidenav, MatSidenavContainer, MatSidenavModule } from '@angular/material/sidenav';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { map } from 'rxjs';
+import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
+import { filter, map, startWith } from 'rxjs';
 import { I18n } from '../core/i18n/i18n';
 import type { TranslationKey } from '../core/i18n/pt';
 import { Shortcuts } from '../core/shortcuts/shortcuts';
@@ -32,7 +32,8 @@ interface NavItem {
   path: string;
   icon: string;
   label: TranslationKey;
-  exact: boolean;
+  /** Whether a URL path (no query or fragment) belongs to this destination. */
+  owns: (path: string) => boolean;
 }
 
 /** The signed-in frame: sidebar navigation, the user menu and the page in the content area. */
@@ -41,7 +42,6 @@ interface NavItem {
   imports: [
     RouterOutlet,
     RouterLink,
-    RouterLinkActive,
     MatSidenavModule,
     MatButtonModule,
     MatIconModule,
@@ -71,9 +71,24 @@ export class AppShell {
   protected readonly phone = computed(() => this.layout() === 'phone');
 
   protected readonly items: NavItem[] = [
-    { path: '/', icon: 'work', label: 'nav.jobs', exact: true },
-    { path: '/profile', icon: 'person', label: 'nav.profile', exact: false },
+    // Jobs owns the dashboard and every job screen (`/jobs/new`, `/jobs/:id/review`).
+    { path: '/', icon: 'work', label: 'nav.jobs', owns: (path) => path === '/' || path.startsWith('/jobs/') },
+    { path: '/profile', icon: 'person', label: 'nav.profile', owns: (path) => path.startsWith('/profile') },
   ];
+
+  private readonly currentPath = toSignal(
+    this.router.events.pipe(
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+      map((event) => event.urlAfterRedirects),
+      startWith(this.router.url),
+      map((url) => url.split(/[?#]/)[0]),
+    ),
+    { requireSync: true },
+  );
+
+  protected isCurrent(item: NavItem): boolean {
+    return item.owns(this.currentPath());
+  }
 
   constructor() {
     const shortcuts = inject(Shortcuts);

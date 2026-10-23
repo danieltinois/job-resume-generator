@@ -12,7 +12,7 @@ import { of } from 'rxjs';
 import { vi } from 'vitest';
 import { AuthStore } from '../core/auth/auth-store';
 import { LOCK_MANAGER } from '../core/auth/refresh-coordinator';
-import { BROWSER_LANGUAGE } from '../core/i18n/i18n';
+import { BROWSER_LANGUAGE, I18n } from '../core/i18n/i18n';
 import { AppShell } from './app-shell';
 
 @Component({ template: '<p>page</p>' })
@@ -45,6 +45,8 @@ describe('AppShell', () => {
             children: [
               { path: '', pathMatch: 'full', component: Page },
               { path: 'jobs/new', component: Page },
+              { path: 'jobs/:id/review', component: Page },
+              { path: 'account', component: Page },
               { path: 'profile', component: Page },
             ],
           },
@@ -61,13 +63,53 @@ describe('AppShell', () => {
   const navLink = (harness: RouterTestingHarness, href: string) =>
     harness.fixture.nativeElement.querySelector(`nav a[href="${href}"]`) as HTMLAnchorElement;
 
-  afterEach(() => TestBed.inject(OverlayContainer).ngOnDestroy());
+  afterEach(() => {
+    TestBed.inject(OverlayContainer).ngOnDestroy();
+    localStorage.removeItem('ui-lang');
+  });
 
   it('marks the current page', async () => {
     const harness = await render(1280, '/profile');
 
     expect(navLink(harness, '/profile').getAttribute('aria-current')).toBe('page');
     expect(navLink(harness, '/').hasAttribute('aria-current')).toBe(false);
+  });
+
+  it.each(['/', '/jobs/new', '/jobs/x/review', '/?q=abc'])('marks Jobs, not Profile, on %s', async (url) => {
+    const harness = await render(1280, url);
+
+    expect(navLink(harness, '/').getAttribute('aria-current')).toBe('page');
+    expect(navLink(harness, '/').classList).toContain('active');
+    expect(navLink(harness, '/profile').hasAttribute('aria-current')).toBe(false);
+  });
+
+  it('marks no destination on a page that is in neither', async () => {
+    const harness = await render(1280, '/account');
+
+    expect(navLink(harness, '/').hasAttribute('aria-current')).toBe(false);
+    expect(navLink(harness, '/profile').hasAttribute('aria-current')).toBe(false);
+  });
+
+  it('follows the page as the user navigates', async () => {
+    const harness = await render(1280, '/');
+
+    await harness.navigateByUrl('/jobs/x/review');
+    expect(navLink(harness, '/').getAttribute('aria-current')).toBe('page');
+
+    await harness.navigateByUrl('/profile');
+    expect(navLink(harness, '/').hasAttribute('aria-current')).toBe(false);
+    expect(navLink(harness, '/profile').getAttribute('aria-current')).toBe('page');
+  });
+
+  it('names the sidebar navigation in both languages', async () => {
+    const harness = await render(1280, '/');
+    const nav = () => harness.fixture.nativeElement.querySelector('nav.nav') as HTMLElement;
+    expect(nav().getAttribute('aria-label')).toBe('Main navigation');
+
+    TestBed.inject(I18n).setLang('pt');
+    harness.detectChanges();
+
+    expect(nav().getAttribute('aria-label')).toBe('Navegação principal');
   });
 
   it('collapses to a rail on tablets', async () => {

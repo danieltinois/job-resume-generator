@@ -188,6 +188,7 @@ export const en: Record<TranslationKey, string> = {
   'common.close': 'Close',
   'nav.newJob': 'New job',
   'nav.menu': 'Navigation menu',
+  'nav.primary': 'Main navigation',
   'nav.shortcuts': 'Keyboard shortcuts',
   'theme.label': 'Theme',
   'theme.light': 'Light',

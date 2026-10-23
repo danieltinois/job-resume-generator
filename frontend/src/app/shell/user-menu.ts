@@ -122,6 +122,10 @@ const LANGUAGES: { lang: UiLanguage; label: string; htmlLang: string }[] = [
     .trigger:hover {
       background: var(--app-subtle);
     }
+    // --app-muted on --app-subtle is below 4.5:1 for 12 px text, so the email takes the text colour.
+    .trigger:hover .email {
+      color: var(--app-text);
+    }
     .trigger.compact {
       justify-content: center;
       padding: 3px;

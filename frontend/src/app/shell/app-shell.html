@@ -20,14 +20,13 @@
         <span [class.visually-hidden]="rail()">{{ i18n.t('nav.newJob') }}</span>
       </a>
 
-      <nav class="nav">
+      <nav class="nav" [attr.aria-label]="i18n.t('nav.primary')">
         @for (item of items; track item.path) {
           <a
             class="nav-item"
             [routerLink]="item.path"
-            routerLinkActive="active"
-            ariaCurrentWhenActive="page"
-            [routerLinkActiveOptions]="{ exact: item.exact }"
+            [class.active]="isCurrent(item)"
+            [attr.aria-current]="isCurrent(item) ? 'page' : null"
             [attr.aria-label]="rail() ? i18n.t(item.label) : null"
             [matTooltip]="i18n.t(item.label)"
             [matTooltipDisabled]="!rail()"
