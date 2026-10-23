@@ -35,7 +35,7 @@ const OTHER_NAMES: Record<string, string> = { Mod: 'Ctrl' };
       border: 1px solid var(--app-border);
       border-radius: 6px;
       background: var(--app-subtle);
-      color: var(--app-muted);
+      color: var(--app-text);
       font: inherit;
       font-size: 12px;
       line-height: 1.5;

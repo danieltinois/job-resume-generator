@@ -142,20 +142,37 @@ describe('Dashboard', () => {
     expect(fixture.debugElement.query((node) => node.name === 'app-empty-state').componentInstance.kind()).toBe('jobs');
   });
 
-  it('keeps a long title on one line with the full text in title', async () => {
+  async function renderOne(job: object) {
     TestBed.configureTestingModule({ imports: [Dashboard], providers: apiTestProviders });
     backend = TestBed.inject(HttpTestingController);
     TestBed.inject(AuthStore).acceptToken('token');
     const fixture = TestBed.createComponent(Dashboard);
     fixture.detectChanges();
-    const long = 'A'.repeat(200);
-    backend.expectOne('/api/jobs').flush([{ ...JOBS[0], title: long }]);
+    backend.expectOne('/api/jobs').flush([job]);
     backend.expectOne('/api/resumes').flush([]);
     backend.expectOne('/api/profile').flush({ version: 1, data: example });
     await fixture.whenStable();
     fixture.detectChanges();
+    return fixture.nativeElement as HTMLElement;
+  }
 
-    expect(fixture.nativeElement.querySelector('[data-test="job"] [title]').getAttribute('title')).toBe(long);
+  it('keeps a long title on one line with the full text in title', async () => {
+    const long = 'A'.repeat(200);
+    const element = await renderOne({ ...JOBS[0], title: long });
+
+    const row = element.querySelector('[data-test="job"]')!;
+    expect(row.querySelector('.title')?.getAttribute('title')).toBe(long);
+    expect(row.querySelector('a[href="/jobs/j1/review"]')).not.toBeNull();
+    expect(row.querySelector('button[aria-label="Job actions"]')).not.toBeNull();
+  });
+
+  it('keeps a long company with the full text in title and the date visible', async () => {
+    const long = 'B'.repeat(200);
+    const element = await renderOne({ ...JOBS[0], company: long });
+
+    const row = element.querySelector('[data-test="job"]')!;
+    expect(row.querySelector('.company')?.getAttribute('title')).toBe(long);
+    expect(row.querySelector('.meta .date')?.textContent).toContain('2026');
   });
 
   it('says when the page cannot load and tries again on request', async () => {

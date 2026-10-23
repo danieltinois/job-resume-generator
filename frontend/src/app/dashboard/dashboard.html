@@ -55,8 +55,8 @@
                 </div>
                 <p class="meta">
                   @if (job.company) {
-                    <span>{{ job.company }}</span>
-                    <span aria-hidden="true"> · </span>
+                    <span class="company" [attr.title]="job.company">{{ job.company }}</span>
+                    <span class="sep" aria-hidden="true"> · </span>
                   }
                   <span class="date">{{ job.createdAt | date: 'mediumDate' }}</span>
                 </p>

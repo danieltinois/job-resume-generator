@@ -21,7 +21,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
     }
     :host(.tone-neutral) {
       background: var(--app-subtle);
-      color: var(--app-muted);
+      color: var(--app-text);
       border-color: var(--app-border);
     }
     :host(.tone-accent) {

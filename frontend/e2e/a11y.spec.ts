@@ -15,6 +15,15 @@ const isKnownChipGridIssue = (rule: string, target: string) =>
 
 /** Fails on any serious or critical WCAG 2.x A/AA violation on the page as currently shown. */
 async function expectAccessible(page: Page, screen: string, scheme: string) {
+  // Switching the scheme starts 150 ms colour transitions; axe must read the settled colours, not a mid-fade frame.
+  await page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity)
+        .map((animation) => animation.finished.catch(() => undefined)),
+    ),
+  );
   const { violations } = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
   const blocking = violations
     .filter((violation) => violation.impact === 'serious' || violation.impact === 'critical')
