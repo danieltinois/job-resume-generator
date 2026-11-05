@@ -181,16 +181,18 @@
         @if (preview.failed()) {
           <p class="error" role="alert">{{ i18n.t('review.previewFailed') }}</p>
         }
-        <div class="sheet">
-          @if (previewUrl(); as url) {
-            <iframe [src]="url" [title]="i18n.t('review.preview')"></iframe>
-          } @else if (!preview.failed()) {
-            <div class="rendering" role="status">
-              <span class="visually-hidden">{{ i18n.t('review.previewLoading') }}</span>
-              <app-skeleton [lines]="10" height="14px" />
-            </div>
-          }
-        </div>
+        @if (!preview.failed()) {
+          <div class="sheet">
+            @if (previewUrl(); as url) {
+              <iframe [src]="url" [title]="i18n.t('review.preview')"></iframe>
+            } @else {
+              <div class="rendering" role="status">
+                <span class="visually-hidden">{{ i18n.t('review.previewLoading') }}</span>
+                <app-skeleton [lines]="10" height="14px" />
+              </div>
+            }
+          </div>
+        }
       </section>
     </div>
   </div>

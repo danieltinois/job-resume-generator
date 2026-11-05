@@ -4,19 +4,19 @@
 :host {
   display: block;
   // The review screen uses the full width: cancel the padding of the shell's content area.
-  margin: -16px;
+  margin: calc(-1 * var(--app-content-padding));
 }
 
 .review {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: calc(100vh - var(--app-topbar-height));
 }
 
 // Sticky top bar: back link, title and company, PT/EN, save.
 .bar {
   position: sticky;
-  top: 0;
+  top: var(--app-topbar-height);
   z-index: 1;
   flex: none;
   display: flex;
@@ -424,6 +424,8 @@ mat-chip {
   aspect-ratio: 210 / 297;
   overflow: hidden;
   border-radius: 4px;
+  // A sheet of paper whatever the scheme: light-dark() tokens inside it (the skeleton) resolve light.
+  color-scheme: light;
   background: #fff;
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.12),
@@ -470,10 +472,9 @@ mat-chip {
   }
 }
 
-// Phones: the shell's own 56 px bar is sticky too, so this one sits below it.
+// Phones: the shell's own bar is sticky too; `top` already clears it.
 @media (max-width: 767px) {
   .bar {
-    top: 56px;
     padding: 8px 16px;
   }
 }

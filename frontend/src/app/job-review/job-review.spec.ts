@@ -5,6 +5,7 @@ import { AuthStore } from '../core/auth/auth-store';
 import example from '../../testing/profile-example.json';
 import { apiTestProviders } from '../auth/testing';
 import { JobReview } from './job-review';
+import type { Preview } from './preview';
 
 const ANALYSIS: Analysis = {
   language: 'EN',
@@ -181,6 +182,24 @@ describe('JobReview', () => {
 
     expect(element.querySelector('.preview app-skeleton')).not.toBeNull();
     expect(element.querySelector('.preview iframe')).toBeNull();
+  });
+
+  it('shows the error, not an empty sheet, when the preview fails', async () => {
+    const fixture = await render();
+    const element: HTMLElement = fixture.nativeElement;
+    expect(element.querySelector('.sheet')).not.toBeNull();
+
+    (fixture.componentInstance as unknown as { preview: Preview }).preview.failed.set(true);
+    fixture.detectChanges();
+
+    expect(element.querySelector('.sheet')).toBeNull();
+    expect(element.querySelector('.preview [role="alert"]')?.textContent).toContain('preview');
+  });
+
+  it('draws the sheet as paper in any colour scheme', async () => {
+    const fixture = await render();
+
+    expect(getComputedStyle(fixture.nativeElement.querySelector('.sheet')).colorScheme).toBe('light');
   });
 
   it('keeps move buttons reachable by keyboard', async () => {

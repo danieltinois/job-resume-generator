@@ -112,6 +112,17 @@ describe('AppShell', () => {
     expect(nav().getAttribute('aria-label')).toBe('Navegação principal');
   });
 
+  it.each([
+    [390, '57px'],
+    [900, '0px'],
+    [1280, '0px'],
+  ])('at %i px the top bar takes %s of the sticky offset', async (width, height) => {
+    const harness = await render(width, '/');
+    const container = harness.fixture.nativeElement.querySelector('mat-sidenav-container') as HTMLElement;
+
+    expect(getComputedStyle(container).getPropertyValue('--app-topbar-height').trim()).toBe(height);
+  });
+
   it('collapses to a rail on tablets', async () => {
     const harness = await render(900, '/');
     const element = harness.fixture.nativeElement as HTMLElement;

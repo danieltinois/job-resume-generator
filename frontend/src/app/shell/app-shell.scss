@@ -4,6 +4,11 @@
   display: block;
   min-height: 100vh;
 
+  // Sizes the pages build on: the padding around the page, and the height of the sticky bar above it (none
+  // unless the layout is a phone). Pages that go edge to edge or stick under the bar read these.
+  --app-content-padding: 16px;
+  --app-topbar-height: 0px;
+
   @include mat.sidenav-overrides(
     (
       container-shape: 0,
@@ -112,6 +117,11 @@
   margin-top: auto;
 }
 
+// Phones: the top bar is 56 px plus its 1 px bottom border.
+.phone {
+  --app-topbar-height: 57px;
+}
+
 // 768–1023 px: a 64 px icon rail.
 .rail {
   .sidebar {
@@ -138,7 +148,8 @@
   position: sticky;
   top: 0;
   z-index: 2;
-  height: 56px;
+  box-sizing: border-box;
+  height: var(--app-topbar-height);
   padding: 0 8px;
   border-bottom: 1px solid var(--app-border);
   background: var(--app-surface);
@@ -146,5 +157,5 @@
 
 .content {
   display: block;
-  padding: 16px;
+  padding: var(--app-content-padding);
 }

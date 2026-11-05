@@ -1,4 +1,4 @@
-<mat-sidenav-container class="container" [class.rail]="rail()">
+<mat-sidenav-container class="container" [class.rail]="rail()" [class.phone]="phone()">
   <mat-sidenav #drawer class="sidebar" fixedInViewport [mode]="phone() ? 'over' : 'side'" [opened]="!phone()">
     <div class="sidebar-inner">
       <div class="brand">

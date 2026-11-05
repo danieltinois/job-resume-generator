@@ -54,11 +54,11 @@
 }
 
 // The PT/EN editing switch stays in view while a long form scrolls. Below 768 px the shell's
-// 56 px top bar is sticky too, so it sits underneath it. Material buttons give their label z-index 1,
+// top bar is sticky too, so it sits underneath it (`--app-topbar-height`). Material buttons give their label z-index 1,
 // so the bar needs more to stay above the form as it scrolls.
 .mode-bar {
   position: sticky;
-  top: 0;
+  top: var(--app-topbar-height);
   z-index: 2;
   display: flex;
   align-items: center;
@@ -69,10 +69,6 @@
 }
 
 @media (max-width: 767px) {
-  .mode-bar {
-    top: 56px;
-  }
-
   .card {
     scroll-margin-top: 120px;
   }
