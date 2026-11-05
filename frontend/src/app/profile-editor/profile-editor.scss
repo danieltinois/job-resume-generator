@@ -58,7 +58,7 @@
 // so the bar needs more to stay above the form as it scrolls.
 .mode-bar {
   position: sticky;
-  top: var(--app-topbar-height);
+  top: var(--app-topbar-height, 0px);
   z-index: 2;
   display: flex;
   align-items: center;

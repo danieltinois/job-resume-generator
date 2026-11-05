@@ -4,19 +4,19 @@
 :host {
   display: block;
   // The review screen uses the full width: cancel the padding of the shell's content area.
-  margin: calc(-1 * var(--app-content-padding));
+  margin: calc(-1 * var(--app-content-padding, 16px));
 }
 
 .review {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - var(--app-topbar-height));
+  height: calc(100vh - var(--app-topbar-height, 0px));
 }
 
 // Sticky top bar: back link, title and company, PT/EN, save.
 .bar {
   position: sticky;
-  top: var(--app-topbar-height);
+  top: var(--app-topbar-height, 0px);
   z-index: 1;
   flex: none;
   display: flex;

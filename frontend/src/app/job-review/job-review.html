@@ -181,7 +181,7 @@
         @if (preview.failed()) {
           <p class="error" role="alert">{{ i18n.t('review.previewFailed') }}</p>
         }
-        @if (!preview.failed()) {
+        @if (previewUrl() || !preview.failed()) {
           <div class="sheet">
             @if (previewUrl(); as url) {
               <iframe [src]="url" [title]="i18n.t('review.preview')"></iframe>

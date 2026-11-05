@@ -196,6 +196,19 @@ describe('JobReview', () => {
     expect(element.querySelector('.preview [role="alert"]')?.textContent).toContain('preview');
   });
 
+  it('keeps the last good preview under the error when a refresh fails', async () => {
+    const fixture = await render();
+    const element: HTMLElement = fixture.nativeElement;
+    const preview = (fixture.componentInstance as unknown as { preview: Preview }).preview;
+
+    preview.url.set('about:blank');
+    preview.failed.set(true);
+    fixture.detectChanges();
+
+    expect(element.querySelector('.preview [role="alert"]')).not.toBeNull();
+    expect(element.querySelector('.sheet iframe')).not.toBeNull();
+  });
+
   it('draws the sheet as paper in any colour scheme', async () => {
     const fixture = await render();
 
